@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chord Guide v2 &mdash; Jam Session</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d; --border: #30363d;
+  --text: #e6edf3; --text-dim: #8b949e;
+  --chord: #ffa657; --chord-bg: rgba(255,166,87,0.08);
+  --section: #79c0ff; --title: #f0f6fc; --accent: #388bfd;
+  --radius: 8px;
+  --toolbar-h: 60px;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px; line-height: 1.5; overflow: hidden; }
+
+/* ══ APP SHELL (sidebar + main) ══ */
+.app-shell { display: flex; height: 100vh; height: 100dvh; }
+
+/* SIDEBAR — persistent setlist, own scrollbar, always visible on desktop */
+.sidebar { width: 260px; flex-shrink: 0; height: 100vh; height: 100dvh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  transition: transform 0.25s ease; z-index: 1200; }
+.sidebar-brand { font-weight: 700; font-size: 18px; color: var(--chord);
+  padding: 18px 20px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg2); z-index: 1;
+  display: flex; align-items: center; gap: 8px; }
+.sidebar-count { font-size: 12px; color: var(--text-dim); font-weight: 400;
+  margin-left: auto; }
+.sidebar-nav { display: flex; flex-direction: column; padding: 8px; gap: 2px; }
+.nav-link { color: var(--text-dim); text-decoration: none; font-size: 14px;
+  padding: 10px 12px; border-radius: 6px; border: 1px solid transparent;
+  transition: all 0.15s; display: block; line-height: 1.3; }
+.nav-link:hover { color: var(--text); background: var(--bg3); }
+.nav-link.active { color: var(--chord); background: rgba(255,166,87,0.1);
+  border-color: var(--chord); font-weight: 600; }
+.nav-link-title { display: block; }
+.nav-link-artist { display: block; font-size: 11px; color: var(--text-dim);
+  opacity: 0.75; margin-top: 2px; font-weight: 400; }
+.nav-link.active .nav-link-artist { color: var(--chord); opacity: 0.8; }
+
+
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.sidebar-overlay.visible { opacity: 1; pointer-events: auto; }
+
+/* MAIN — independently scrolling content area */
+.main { flex: 1; min-width: 0; height: 100vh; height: 100dvh; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; scroll-behavior: smooth; }
+
+.toolbar { position: sticky; top: 0; z-index: 500; background: var(--bg2);
+  border-bottom: 1px solid var(--border); display: flex; align-items: center;
+  gap: 10px; padding: 10px 20px; min-height: var(--toolbar-h); }
+.menu-btn { display: none; background: var(--bg3); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px;
+  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  align-items: center; gap: 6px; flex-shrink: 0; }
+.menu-btn:hover { border-color: var(--chord); color: var(--chord); }
+.toolbar-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-left: auto; }
+
+#scroll-btn { background: var(--accent); color: #fff; border: none;
+  border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
+#scroll-btn:hover { background: #58a6ff; }
+#scroll-btn.active { background: #da3633; }
+#scroll-btn.active:hover { background: #f85149; }
+
+/* SPEED SELECTOR */
+#speed-control { display: flex; flex-direction: column; align-items: center;
+  gap: 2px; user-select: none; -webkit-user-select: none; flex-shrink: 0; }
+.sc-readout { font-size: 11px; color: var(--text-dim); white-space: nowrap;
+  letter-spacing: 0.3px; }
+.sc-readout #speed-val { color: var(--chord); font-weight: 700; font-size: 12px; }
+#speed-track { position: relative; width: 188px; height: 36px;
+  cursor: pointer; touch-action: none; }
+.sc-rail { position: absolute; left: 0; right: 0; top: 9px; height: 2px;
+  background: var(--border); border-radius: 1px; pointer-events: none; }
+.sc-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0;
+  background: var(--chord); border-radius: 1px; pointer-events: none; }
+.sc-dot { position: absolute; top: 5px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--bg3); border: 2px solid var(--border);
+  padding: 0; cursor: pointer; z-index: 2; transform: translateX(-50%);
+  transition: all 0.15s ease; }
+.sc-dot:hover { border-color: var(--text-dim); background: var(--bg2);
+  transform: translateX(-50%) scale(1.35); }
+.sc-dot.active { top: 3px; width: 14px; height: 14px;
+  background: var(--chord); border-color: var(--chord);
+  box-shadow: 0 0 0 3px rgba(255,166,87,0.22); transform: translateX(-50%); }
+.sc-dot.active:hover { transform: translateX(-50%) scale(1.12); }
+.sc-label { position: absolute; top: 22px; font-size: 10px; color: var(--text-dim);
+  transform: translateX(-50%); pointer-events: none; line-height: 1;
+  transition: color 0.15s; }
+.sc-label.active-label { color: var(--chord); font-weight: 700; }
+.speed-toggle-btn { display: none; background: var(--bg3); color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 6px; width: 34px; height: 34px;
+  font-size: 15px; cursor: pointer; align-items: center; justify-content: center;
+  flex-shrink: 0; }
+.speed-toggle-btn:hover { border-color: var(--chord); color: var(--chord); }
+.speed-toggle-btn.active { color: var(--chord); border-color: var(--chord); }
+
+/* BPM DISPLAY */
+#bpm-display { display: flex; align-items: center; gap: 5px; flex-shrink: 0;
+  padding: 5px 11px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg3); white-space: nowrap; }
+.bpm-icon { color: var(--chord); font-size: 16px; line-height: 1; }
+#bpm-val { color: var(--title); font-weight: 800; font-size: 15px;
+  font-family: 'Consolas','Courier New',monospace; min-width: 3ch; text-align: right;
+  transition: color 0.3s; }
+#bpm-val.changed { color: var(--chord); }
+.bpm-unit { color: var(--text-dim); font-size: 11px; letter-spacing: 0.5px; }
+
+/* CONTENT */
+.content { max-width: 860px; margin: 0 auto; padding: 24px 24px 80px; }
+
+/* SONGS */
+.song { background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 32px; overflow: hidden;
+  scroll-margin-top: calc(var(--toolbar-h) + 16px); }
+/* KEY / TRANSPOSE TOOLBAR */
+.key-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: 8px 24px; font-size: 13px; color: var(--text-dim); }
+.key-toolbar-label { font-weight: 600; }
+.key-orig { font-family: 'Consolas','Courier New',monospace; color: var(--text-dim);
+  padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; }
+.key-btn { background: var(--bg2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; width: 26px; height: 26px; font-size: 15px; font-weight: 700;
+  line-height: 1; cursor: pointer; transition: all 0.15s; }
+.key-btn:hover { border-color: var(--chord); color: var(--chord); }
+.key-select { background: var(--bg2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 4px 8px; font-family: 'Consolas','Courier New',monospace;
+  font-size: 13px; cursor: pointer; }
+.key-reset { background: none; color: var(--text-dim); border: none;
+  padding: 4px 2px; font-size: 12px; cursor: pointer; text-decoration: underline;
+  font-family: inherit; }
+.key-reset:hover { color: var(--text); }
+.key-toolbar.key-transposed .key-select { border-color: var(--chord); color: var(--chord); }
+.key-toolbar.key-transposed .key-orig { opacity: 0.6; }
+
+.song-header { background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: 16px 24px; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; }
+.song-header-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.song-artist { font-size: 13px; color: var(--text-dim); font-weight: 500; }
+
+.song-title { font-size: 24px; font-weight: 800; color: var(--title);
+  letter-spacing: 0.5px; line-height: 1.2; }
+.song-counter { font-size: 12px; color: var(--text-dim); white-space: nowrap;
+  background: var(--bg); padding: 3px 10px; border-radius: 20px;
+  border: 1px solid var(--border); }
+.song-content { padding: 20px 24px; }
+.font-mono { font-family: 'Consolas','Courier New','Lucida Console',monospace; }
+
+.chord-line { color: var(--chord); font-weight: 700; font-size: 17px;
+  white-space: pre; background: var(--chord-bg); padding: 1px 0;
+  line-height: 1.75; display: block; }
+.lyric-line { color: var(--text); font-size: 16px; white-space: pre;
+  line-height: 1.75; display: block; }
+.section-label { color: var(--section); font-weight: 600; font-size: 13px;
+  text-transform: uppercase; letter-spacing: 1.5px; margin: 18px 0 6px;
+  opacity: 0.9; display: block; font-family: -apple-system, sans-serif; }
+.blank-line { height: 8px; display: block; }
+
+/* TOP BTN */
+#top-btn { position: fixed; bottom: 28px; right: 24px; background: var(--bg3);
+  color: var(--text-dim); border: 1px solid var(--border); border-radius: 50px;
+  padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+  opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 999; }
+#top-btn.visible { opacity: 1; pointer-events: auto; }
+#top-btn:hover { background: var(--bg2); color: var(--text); border-color: var(--chord); }
+
+/* PAUSE HINT */
+.pause-hint { position: fixed; bottom: 72px; right: 24px;
+  background: rgba(255,166,87,0.12); color: var(--chord);
+  border: 1px solid var(--chord); border-radius: 6px; padding: 6px 12px;
+  font-size: 12px; font-weight: 600; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s; z-index: 998; }
+.pause-hint.visible { opacity: 1; }
+
+/* PRINT */
+@media print {
+  .sidebar, .sidebar-overlay, .toolbar, #top-btn, .pause-hint, .key-toolbar { display: none !important; }
+  body { overflow: visible; background: #fff; color: #000; }
+  .app-shell { display: block; height: auto; }
+  .main { height: auto; overflow: visible; }
+  .content { max-width: 100%; padding: 0; }
+  .song { border: 1px solid #ccc; background: #fff; margin-bottom: 30px; page-break-inside: avoid; }
+  .song-header { background: #f0f0f0; border-bottom: 1px solid #ccc; }
+  .song-title { color: #000; }
+  .chord-line { color: #c85000; background: #fff8f0; }
+  .lyric-line { color: #000; }
+  .section-label { color: #005080; }
+}
+
+/* RESPONSIVE — collapse sidebar into a drawer, maximize content width */
+@media (max-width: 900px) {
+  :root { --toolbar-h: 52px; }
+  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 82%; max-width: 300px;
+    transform: translateX(-100%); box-shadow: 2px 0 24px rgba(0,0,0,0.4); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; }
+  .menu-btn { display: inline-flex; }
+  .toolbar { padding: 8px 12px; gap: 8px; }
+  .toolbar-controls { gap: 6px; }
+  #speed-control { display: none; position: absolute; top: 100%; right: 8px;
+    margin-top: 6px; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  #speed-control.open { display: flex; }
+  #speed-track { width: 140px; }
+  .speed-toggle-btn { display: inline-flex; }
+  #bpm-display { padding: 4px 8px; }
+  #bpm-val { font-size: 13px; }
+  #scroll-btn { padding: 5px 10px; font-size: 12px; }
+  .content { padding: 14px 12px 60px; }
+  .song-header { padding: 12px 14px; }
+  .song-title { font-size: 17px; }
+  .key-toolbar { padding: 6px 14px; gap: 6px; }
+  .song-content { padding: 14px 12px; }
+  .chord-line, .lyric-line { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand">&#9835; Chord Guide<span class="sidebar-count">18 songs</span></div>
+    <nav class="sidebar-nav">
+<a href="#song-1" class="nav-link" data-index="1"><span class="nav-link-title">BULONG</span><span class="nav-link-artist">December Avenue</span></a>
+<a href="#song-2" class="nav-link" data-index="2"><span class="nav-link-title">HULING SANDALI</span><span class="nav-link-artist">December Avenue</span></a>
+<a href="#song-3" class="nav-link" data-index="3"><span class="nav-link-title">TAHANAN (WEDDING VERSION)</span><span class="nav-link-artist">El Manu</span></a>
+<a href="#song-4" class="nav-link" data-index="4"><span class="nav-link-title">KUNG DI RIN LANG IKAW</span><span class="nav-link-artist">December Avenue</span></a>
+<a href="#song-5" class="nav-link" data-index="5"><span class="nav-link-title">PAHINA</span><span class="nav-link-artist">Cup of Joe</span></a>
+<a href="#song-6" class="nav-link" data-index="6"><span class="nav-link-title">SA NGALAN NG PAG-IBIG</span><span class="nav-link-artist">December Avenue</span></a>
+<a href="#song-7" class="nav-link" data-index="7"><span class="nav-link-title">NOBELA</span><span class="nav-link-artist">Join the Club</span></a>
+<a href="#song-8" class="nav-link" data-index="8"><span class="nav-link-title">SANA</span><span class="nav-link-artist">I Belong to the Zoo</span></a>
+<a href="#song-9" class="nav-link" data-index="9"><span class="nav-link-title">KALAPASTANGAN</span><span class="nav-link-artist">fitterkarma</span></a>
+<a href="#song-10" class="nav-link" data-index="10"><span class="nav-link-title">KUNG WALA KA</span><span class="nav-link-artist">Hale</span></a>
+<a href="#song-11" class="nav-link" data-index="11"><span class="nav-link-title">BISAN PA</span></a>
+<a href="#song-12" class="nav-link" data-index="12"><span class="nav-link-title">SINE SINE</span><span class="nav-link-artist">Missing Filemon</span></a>
+<a href="#song-13" class="nav-link" data-index="13"><span class="nav-link-title">SABOT-SABOT</span><span class="nav-link-artist">Phylum</span></a>
+<a href="#song-14" class="nav-link" data-index="14"><span class="nav-link-title">GUGMANG GIATAY</span><span class="nav-link-artist">The Ambassadors</span></a>
+<a href="#song-15" class="nav-link" data-index="15"><span class="nav-link-title">SAKSI ANG LANGIT</span><span class="nav-link-artist">December Avenue</span></a>
+<a href="#song-16" class="nav-link" data-index="16"><span class="nav-link-title">WAY SUKOD</span><span class="nav-link-artist">Oh, Caraga</span></a>
+<a href="#song-17" class="nav-link" data-index="17"><span class="nav-link-title">SA SUSUNOD NA HABANG BUHAY</span><span class="nav-link-artist">Ben&amp;Ben</span></a>
+<a href="#song-18" class="nav-link" data-index="18"><span class="nav-link-title">MAY SINDE</span></a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="main" id="main">
+    <div class="toolbar">
+      <button id="menu-btn" class="menu-btn">&#127925; Setlist</button>
+    <div class="toolbar-controls">
+      <button id="scroll-btn">&#9654; Auto-Scroll</button>
+      <div id="bpm-display" title="Current song BPM">
+        <span class="bpm-icon">&#9834;</span>
+        <span id="bpm-val">75</span>
+        <span class="bpm-unit">BPM</span>
+      </div>
+      <button id="speed-toggle-btn" class="speed-toggle-btn" title="Fine-tune scroll speed">&#9881;</button>
+      <div id="speed-control" title="Fine-tune multiplier on top of BPM speed">
+        <div class="sc-readout">Fine Tune:&nbsp;<span id="speed-val">1</span>&times;</div>
+        <div id="speed-track">
+          <div class="sc-rail"><div class="sc-fill" id="sc-fill"></div></div>
+          <button class="sc-dot" data-idx="0" style="left:0%"></button>
+          <button class="sc-dot" data-idx="1" style="left:14.286%"></button>
+          <button class="sc-dot" data-idx="2" style="left:28.571%"></button>
+          <button class="sc-dot" data-idx="3" style="left:42.857%"></button>
+          <button class="sc-dot" data-idx="4" style="left:57.143%"></button>
+          <button class="sc-dot" data-idx="5" style="left:71.429%"></button>
+          <button class="sc-dot" data-idx="6" style="left:85.714%"></button>
+          <button class="sc-dot" data-idx="7" style="left:100%"></button>
+          <span class="sc-label" style="left:0%">0.5</span>
+          <span class="sc-label" style="left:14.286%">1</span>
+          <span class="sc-label" style="left:28.571%">1.5</span>
+          <span class="sc-label" style="left:42.857%">2</span>
+          <span class="sc-label" style="left:57.143%">2.5</span>
+          <span class="sc-label" style="left:71.429%">3</span>
+          <span class="sc-label" style="left:85.714%">3.5</span>
+          <span class="sc-label" style="left:100%">4</span>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="content">
+    <div id="songs-container">
+<article id="song-1" class="song" data-bpm="70" data-index="1" data-key="F">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">BULONG</h2>
+    <div class="song-artist">December Avenue</div>
+  </div>
+    <span class="song-counter">Song 1 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">F Am7 G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">      F            Am7    G</div>
+<div class="lyric-line">Hindi masabi ang nararamdaman</div>
+<div class="chord-line">       F                Am7       G</div>
+<div class="lyric-line">Di makalapit, sadyang nanginginig nalang</div>
+<div class="chord-line">      F                         Am7 G</div>
+<div class="lyric-line">Mga kamay na sabik sa piling mo</div>
+<div class="chord-line">                   F                          Am7      G</div>
+<div class="lyric-line">Ang iyong matang walang mintis sa pagtigil ng aking mundo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">       F                    Am7 G</div>
+<div class="lyric-line">Ako'y alipin ng pag-ibig mo</div>
+<div class="chord-line">         F                          Am7 G</div>
+<div class="lyric-line">Handang ibigin ang 'isang tulad mo</div>
+<div class="chord-line">             F                          Am7    G</div>
+<div class="lyric-line">Hangga't ang puso mo'y sa akin lang hindi ka na malilinlang</div>
+<div class="chord-line"> F                        Am7          G</div>
+<div class="lyric-line">Ikaw ang ilaw sa dilim at ang liwanag ng mga bituin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">        F                 Am7          G</div>
+<div class="lyric-line">Hindi mapakali, hanggang tingin nalang</div>
+<div class="chord-line">               F                     Am7      G</div>
+<div class="lyric-line">Bumubulong sa iyong tabi, sadyang walang makapantay</div>
+<div class="chord-line">        F                     Am7    G</div>
+<div class="lyric-line">Sa kagandahang inuukit mo sa isip ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">       F                    Am7 G</div>
+<div class="lyric-line">Ako'y alipin ng pag-ibig mo</div>
+<div class="chord-line">         F                         Am7 G</div>
+<div class="lyric-line">Handang ibigin ang 'isang tulad mo</div>
+<div class="chord-line">             F                        Am7      G</div>
+<div class="lyric-line">Hangga't ang puso mo'y sa akin lang hindi ka na malilinlang</div>
+<div class="chord-line"> F                        Am7        G</div>
+<div class="lyric-line">Ikaw ang ilaw sa dilim at ang liwanag ng mga bituin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">F Am7 G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       F                    Am7 G</div>
+<div class="lyric-line">Ako'y alipin ng pag-ibig mo</div>
+<div class="chord-line">         F                         Am7 G</div>
+<div class="lyric-line">Handang ibigin ang 'isang tulad mo</div>
+<div class="chord-line">             F                        Am7      G</div>
+<div class="lyric-line">Hangga't ang puso mo'y sa akin lang hindi ka na malilinlang</div>
+<div class="chord-line"> F                        Am7        G</div>
+<div class="lyric-line">Ikaw ang ilaw sa dilim at ang liwanag ng mga bituin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">F Am7 G</div>
+  </div>
+</article>
+<article id="song-2" class="song" data-bpm="75" data-index="2" data-key="E">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">HULING SANDALI</h2>
+    <div class="song-artist">December Avenue</div>
+  </div>
+    <span class="song-counter">Song 2 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">E Asus2 F#m</div>
+<div class="chord-line">E F#m G#m E</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">E Asus2 F#m Asus2 Am</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">C#m7</div>
+<div class="chord-line">      Asus2                   C#m7</div>
+<div class="lyric-line">Hindi mapigil ang bugso ng aking puso</div>
+<div class="chord-line">   Asus2       Bsus4          C#m7</div>
+<div class="lyric-line">Sa tuwing ako'y papalapit sa'yo</div>
+<div class="chord-line">   Asus2                       C#m7</div>
+<div class="lyric-line">Maaari bang hingin ang iyong kamay?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">        Asus2          Bsus4            C#m7</div>
+<div class="lyric-line">Hawakan mo't huwag mong bitawan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">C#m7 Asus2 C#m7 Asus2 Bsus4</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">C#m7</div>
+<div class="chord-line">         Asus2                   C#m7</div>
+<div class="lyric-line">Hindi mapigil ang tibok ng aking puso</div>
+<div class="chord-line">   Asus2       Bsus4          C#m7</div>
+<div class="lyric-line">Sa tuwing ako'y nakatingin sa'yo</div>
+<div class="chord-line">   Asus2                       C#m7</div>
+<div class="lyric-line">Maaari bang huwag kang humiwalay</div>
+<div class="chord-line">      Asus2      Bsus4</div>
+<div class="lyric-line">Dahil sandali na lang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Refrain]</div>
+<div class="chord-line">F#m          G#m          Asus2</div>
+<div class="lyric-line">Darating din ang gabing walang pipigil sa 'tin</div>
+<div class="chord-line">     F#m           G#m          Asus2        Am</div>
+<div class="lyric-line">Kung hindi ngayon aasa bang maibabalik ang kahapon?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">E                                       Asus2</div>
+<div class="lyric-line">Kahit sandali, palayain ang pusong di mapigil</div>
+<div class="chord-line">                          F#m</div>
+<div class="lyric-line">Sana'y tayong dalawa sa huling pagkakataon</div>
+<div class="chord-line">                  Asus2   Am</div>
+<div class="lyric-line">Na ika'y magiging akin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 3]</div>
+<div class="chord-line">C#m7</div>
+<div class="chord-line">         Asus2                  C#m7</div>
+<div class="lyric-line">Hindi matigil ang gulo sa aking isip</div>
+<div class="chord-line">   Asus2       Bsus4          C#m7</div>
+<div class="lyric-line">At para bang walang kasing sakit</div>
+<div class="chord-line">     Asus2               C#m7</div>
+<div class="lyric-line">Alaala mong hindi ko malimutan</div>
+<div class="chord-line">      Asus2       Bsus4</div>
+<div class="lyric-line">Oras lang ang may alam</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Refrain]</div>
+<div class="chord-line">     F#m          G#m          Asus2</div>
+<div class="lyric-line">Kung darating din ang gabing walang pipigil sa 'tin</div>
+<div class="chord-line">     F#m            G#m         Asus2         Am</div>
+<div class="lyric-line">Kung hindi ngayon, aasa bang maibabalik ang kahapon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">E                                      Asus2</div>
+<div class="lyric-line">Kahit sandali palayain ang pusong di mapigil</div>
+<div class="chord-line">                          F#m</div>
+<div class="lyric-line">Sana'y tayong dalawa sa huling pagkakataon</div>
+<div class="chord-line">                 Asus2    Am</div>
+<div class="lyric-line">Na hindi na para sa 'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">      C#m           Bsus4</div>
+<div class="lyric-line">At sa bawat minuto ako'y di natuto</div>
+<div class="chord-line"> Asus2</div>
+<div class="lyric-line">Ipilit mang iba, ako'y maghihintay sa 'yo</div>
+<div class="chord-line">          C#m                Bsus4</div>
+<div class="lyric-line">Ikaw ang aking kapiling sa huling sandali</div>
+<div class="chord-line">    Asus2                    Am</div>
+<div class="lyric-line">Kasalanan ba kung puso natin ang magwawagi?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">           E                            Asus2</div>
+<div class="lyric-line">Kahit sandali, palayain ang pusong di mapigil</div>
+<div class="chord-line">                          F#m</div>
+<div class="lyric-line">Sana'y tayong dalawa sa huling pagkakataon</div>
+<div class="chord-line">                 Asus2   Am</div>
+<div class="lyric-line">Na hindi na para sa 'tin</div>
+<div class="chord-line">           E                              Asus2</div>
+<div class="lyric-line">Kahit sandali, patawarin ang pusong 'di tumigil</div>
+<div class="chord-line">                         F#m</div>
+<div class="lyric-line">Para sating dalawa ang maling pagkakataon</div>
+<div class="chord-line">                  Asus2 Am</div>
+<div class="lyric-line">Na ika'y magiging akin</div>
+  </div>
+</article>
+<article id="song-3" class="song" data-bpm="70" data-index="3" data-key="Ab">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">TAHANAN (WEDDING VERSION)</h2>
+    <div class="song-artist">El Manu</div>
+  </div>
+    <span class="song-counter">Song 3 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">G# G#/C Fm7      C#add9</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">        G#</div>
+<div class="lyric-line">Nagsimula ang lahat</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">    G#/C</div>
+<div class="lyric-line">Sa isang kanta</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">           Fm7</div>
+<div class="lyric-line">Bakit ngayon ka lang?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">               C#add9</div>
+<div class="lyric-line">Sabay nagtagpo ating mata</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       G#</div>
+<div class="lyric-line">Ilang beses humindi</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">           G#/C</div>
+<div class="lyric-line">Buti ay 'di ako nakinig</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">   Fm7            D#/G      C#add9</div>
+<div class="lyric-line">Tadhana na ang bumulong sa 'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G#/C                C#add9</div>
+<div class="lyric-line"> 'Di ba't sinabi sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">A#m G#/C     C#add9</div>
+<div class="lyric-line"> Ipaglalaban ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">        G#</div>
+<div class="lyric-line">Tahanan mo ako</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          G#/C</div>
+<div class="lyric-line">'Di magbabago 'yun</div>
+<div class="chord-line">          A#m</div>
+<div class="lyric-line">At 'pag ika'y nawawala</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">           C#add9         D#</div>
+<div class="lyric-line">Tingin ka lang sa 'king mata</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       G#</div>
+<div class="lyric-line">Pagmamahal sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       G#/C</div>
+<div class="lyric-line">'Di mauubos 'yun</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">    A#m         G#/C       C#add9</div>
+<div class="lyric-line">Lalabanan ko lahat para sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">            A#m       G#/C</div>
+<div class="lyric-line">Basta't nandito lang ako</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">        C#add9</div>
+<div class="lyric-line">Sa tabi mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Interlude]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G# G#/C Fm7  C#add9</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">      G#</div>
+<div class="lyric-line">Akala ko noon</div>
+<div class="chord-line">       G#/C</div>
+<div class="lyric-line">Na imposible 'to</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">           Fm7</div>
+<div class="lyric-line">Ang dating pangarap ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       C#add9</div>
+<div class="lyric-line">Nasa harap ko na ngayon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">      G#</div>
+<div class="lyric-line">Ilang beses humindi</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">        G#/C</div>
+<div class="lyric-line">Buti hindi ka umalis</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">   Fm7         D#/G        C#add9</div>
+<div class="lyric-line">Tadhana na ang nagtulot sa'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G#/C                C#add9</div>
+<div class="lyric-line"> 'Di ba't sinabi sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">A#m  G#/C    C#add9</div>
+<div class="lyric-line"> Ipaglalaban ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">        G#</div>
+<div class="lyric-line">Tahanan mo ako</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          G#/C</div>
+<div class="lyric-line">'Di magbabago 'yun</div>
+<div class="chord-line">          A#m</div>
+<div class="lyric-line">At 'pag ika'y nawawala</div>
+<div class="chord-line">           C#add9         D#</div>
+<div class="lyric-line">Tingin ka lang sa 'king mata</div>
+<div class="chord-line">       G#</div>
+<div class="lyric-line">Pagmamahal sa'yo</div>
+<div class="chord-line">       G#/C</div>
+<div class="lyric-line">'Di mauubos 'yun</div>
+<div class="chord-line">    A#m         G#/C       C#add9</div>
+<div class="lyric-line">Lalabanan ko lahat para sa'yo</div>
+<div class="chord-line">            A#m       G#/C</div>
+<div class="lyric-line">Basta't nandito lang ako</div>
+<div class="chord-line">        C#add9</div>
+<div class="lyric-line">Sa tabi mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">Fm7          Cm</div>
+<div class="lyric-line">  Aaminin sa'yo</div>
+<div class="chord-line">             C#add9</div>
+<div class="lyric-line">Ang daming beses</div>
+<div class="chord-line">                  G# D#/G</div>
+<div class="lyric-line">Ng muntikang sumuko</div>
+<div class="chord-line">Fm7                 Cm</div>
+<div class="lyric-line">  Ngunit nakayanan ko</div>
+<div class="chord-line">          C#add9</div>
+<div class="lyric-line">'Pagkat walang hanggan</div>
+<div class="chord-line">                C#m</div>
+<div class="lyric-line">Ang pag-ibig niya</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental Break]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G# G#/C A#m C#add9 D#</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G# G#/C A#m Cm C#add9</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">        G#</div>
+<div class="lyric-line">Tahanan mo ako</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          G#/C</div>
+<div class="lyric-line">'Di magbabago 'yun</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          A#m       G#/C</div>
+<div class="lyric-line">At 'pag ika'y nawawala</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">           C#add9</div>
+<div class="lyric-line">Tingin ka lang sa 'king mata</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       G#</div>
+<div class="lyric-line">Pagmamahal sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">       G#/C</div>
+<div class="lyric-line">'Di mauubos 'yun</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">        A#m        G#/C       C#add9</div>
+<div class="lyric-line">Sabay natin na dadaanan ang lahat</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">              A#m    G#/C        C#add9</div>
+<div class="lyric-line">Hangga't sa dulo ng ating pagmamahal</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">            A#m       G#/C     C#add9</div>
+<div class="lyric-line">Hangga't sa kunin tayo ng maykapal</div>
+  </div>
+</article>
+<article id="song-4" class="song" data-bpm="70" data-index="4" data-key="E">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">KUNG DI RIN LANG IKAW</h2>
+    <div class="song-artist">December Avenue</div>
+  </div>
+    <span class="song-counter">Song 4 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">       E                     G#m</div>
+<div class="lyric-line">Kung hindi rin lang ikaw ang dahilan</div>
+<div class="chord-line">    Amaj7                    B</div>
+<div class="lyric-line">Pipilitin ba ang puso kong hindi na masaktan?</div>
+<div class="chord-line">       E           G#m</div>
+<div class="lyric-line">Kung hindi ikaw ay hindi na lang</div>
+<div class="chord-line">    Amaj7                    B</div>
+<div class="lyric-line">Pipilitin pang umasa para sating dalawa</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">  Amaj7           B</div>
+<div class="lyric-line">Giniginaw at hindi makagalaw</div>
+<div class="chord-line">      G#m                  A        B           E</div>
+<div class="lyric-line">Nahihirapan ang pusong pinipilit ay ikaw</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                    B              E</div>
+<div class="lyric-line">Aawatin ang sarili na umibig pang muli</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                       B</div>
+<div class="lyric-line">Aawatin ba ang puso kong ibigin ka?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">E G#m A B</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">     E                       G#m</div>
+<div class="lyric-line">Kung hindi rin lang ikaw ang dahilan</div>
+<div class="chord-line">     Amaj7                       B</div>
+<div class="lyric-line">Pipiliin bang umiwas ng hindi na masaktan?</div>
+<div class="chord-line">       E            G#m</div>
+<div class="lyric-line">Kung hindi ikaw ay sino pa ba?</div>
+<div class="chord-line">       Amaj7               B</div>
+<div class="lyric-line">Ang luluha sa umaga para sating dalawa</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">  Amaj7           B</div>
+<div class="lyric-line">Bumibitaw dahil di makagalaw</div>
+<div class="chord-line">      G#m                  A        B           E</div>
+<div class="lyric-line">Pinipigilan ba ang puso mong iba ang sinisigaw?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                    B              E</div>
+<div class="lyric-line">Aawatin ang sarili na umibig pang muli</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                       B</div>
+<div class="lyric-line">Aawatin ba ang puso kong ibigin ka?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">  Amaj7          B</div>
+<div class="lyric-line">Naliligaw at malayo ang tanaw</div>
+<div class="chord-line">      G#m                     A         B</div>
+<div class="lyric-line">Pinipigilan na ang pusong pinipilit ay ikaw</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">E G#m A B      E</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                    B              E</div>
+<div class="lyric-line">Aawatin ang sarili na makita kang muli</div>
+<div class="chord-line">            G#m</div>
+<div class="lyric-line">Kung di rin tayo sa huli</div>
+<div class="chord-line">   A                       B           E</div>
+<div class="lyric-line">Aawatin ba ang puso kong ibigin ka?</div>
+<div class="chord-line">      G#m</div>
+<div class="lyric-line">Kaya bang umibig ng iba?</div>
+<div class="chord-line">     A                     B           E</div>
+<div class="lyric-line">(Aawatin ba ang puso kong ibigin ka?)</div>
+<div class="chord-line">      G#m</div>
+<div class="lyric-line">Papayagan ba ng puso kong ibigin ka?</div>
+<div class="chord-line">     A                     B</div>
+<div class="lyric-line">(Aawatin ba ang puso kong ibigin ka?)</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">Amaj7 F#m Amaj7 F#m</div>
+  </div>
+</article>
+<article id="song-5" class="song" data-bpm="80" data-index="5" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">PAHINA</h2>
+    <div class="song-artist">Cup of Joe</div>
+  </div>
+    <span class="song-counter">Song 5 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">Cmaj7        G         D</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">Cmaj7                    G      D</div>
+<div class="lyric-line">'Di na makausad, 'di malinawan</div>
+<div class="chord-line">Cmaj7                         G     D</div>
+<div class="lyric-line">'Di na mabura ang iyong mga larawan</div>
+<div class="chord-line">Cmaj7                                                           G  D</div>
+<div class="lyric-line">'Di alam kung sa'n tutungo ang mga hakbang patalikod, naghihingalo</div>
+<div class="chord-line">Cmaj7                                      G     D</div>
+<div class="lyric-line">Ang lapis na ginamit sa kuwento nating naudlot</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">Cmaj7                           G D</div>
+<div class="lyric-line">Bawat buklat ng aklat, binabalikan</div>
+<div class="chord-line">Cmaj7                            G</div>
+<div class="lyric-line">Mga liham na ang laman ligayang dala</div>
+<div class="chord-line">               D</div>
+<div class="lyric-line">Ikaw lang ang may akda</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Sa lahat ng pahinang sinulat ng tadhana'y</div>
+<div class="chord-line"> G               D</div>
+<div class="lyric-line">Ikaw at ikaw at ikaw pa rin</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Ang yugtong paulit-ulit kong babalik-balikan</div>
+<div class="chord-line"> G                 D</div>
+<div class="lyric-line">Sigaw ay sigaw ay ikaw pa rin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Patuloy kong panghahawakan ang 'yong mga salitang</div>
+<div class="chord-line">G                     D</div>
+<div class="lyric-line">Hindi na nakikita sa tingin ng 'yong mga mata</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Ngunit kung sarado na ang puso sa nadarama</div>
+<div class="chord-line">G                           D                 Cmaj7</div>
+<div class="lyric-line">Puwede bang isipin mo kung bakit tayo nagsimula?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Ating katotohana'y</div>
+<div class="chord-line">                  G   D</div>
+<div class="lyric-line">Naging isang nobelang</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Winakasan ng pagdududang</div>
+<div class="chord-line">            G   D</div>
+<div class="lyric-line">'Di na nalabanan</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Nais na maramdaman muli</div>
+<div class="chord-line">                   G           D</div>
+<div class="lyric-line">Kung pa'no isulat ang pangalan mo</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Ngunit bawat letra'y mahirap nang iguhit</div>
+<div class="chord-line">G                        D</div>
+<div class="lyric-line">Dahil binubuo nila ang 'yong mga pangako</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Sa lahat ng pahinang sinulat ng tadhana'y</div>
+<div class="chord-line"> G               D</div>
+<div class="lyric-line">Ikaw at ikaw at ikaw pa rin</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Ang yugtong paulit-ulit kong babalik-balikan</div>
+<div class="chord-line"> G                 D</div>
+<div class="lyric-line">Sigaw ay sigaw ay ikaw pa rin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Simula sa wakas na 'di matuklasan</div>
+<div class="chord-line">      G                  D</div>
+<div class="lyric-line">Pabalik kung saan 'di na natagpuan</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Ang mga matang nakatanaw sa umpisa</div>
+<div class="chord-line">       G                 D</div>
+<div class="lyric-line">Ng yugtong 'di na sana naisulat pa</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">Simula sa wakas na 'di matuklasan</div>
+<div class="chord-line">    G                     D</div>
+<div class="lyric-line">Pabalik kung saan 'di na natagpuan</div>
+<div class="chord-line">    Cmaj7</div>
+<div class="lyric-line">Ang mga matang nakatanaw sa umpisa</div>
+<div class="chord-line">       G                 D</div>
+<div class="lyric-line">Ng yugtong 'di na sana naisulat pa</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Sa lahat ng pahinang sinulat ng tadhana'y</div>
+<div class="chord-line">  G              D</div>
+<div class="lyric-line">Ikaw at ikaw at ikaw pa rin</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Ang yugtong paulit-ulit kong babalik-balikan</div>
+<div class="chord-line">  G                D</div>
+<div class="lyric-line">Sigaw ay sigaw ay ikaw pa rin</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Patuloy kong panghahawakan ang 'yong mga salitang</div>
+<div class="chord-line">G                     D</div>
+<div class="lyric-line">Hindi na nakikita sa tingin ng 'yong mga mata</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Ngunit kung sarado na ang puso sa nadarama</div>
+<div class="chord-line">G                           D                 Cmaj7</div>
+<div class="lyric-line">Puwede bang isipin mo kung bakit tayo nagsimula?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">Cmaj7</div>
+<div class="lyric-line">(Simula sa wakas na 'di matuklasan)</div>
+<div class="chord-line">   G              D</div>
+<div class="lyric-line">Ikaw at ikaw at ikaw pa rin</div>
+<div class="lyric-line">(Pabalik kung saan 'di na natagpuan)</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">     Cmaj7</div>
+<div class="lyric-line">(Ang mga matang nakatanaw sa umpisa)</div>
+<div class="chord-line">   G               D</div>
+<div class="lyric-line">Sigaw ay sigaw ay...</div>
+<div class="lyric-line">(Ng yugtong 'di na sana naisulat pa)</div>
+  </div>
+</article>
+<article id="song-6" class="song" data-bpm="78" data-index="6" data-key="D">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SA NGALAN NG PAG-IBIG</h2>
+    <div class="song-artist">December Avenue</div>
+  </div>
+    <span class="song-counter">Song 6 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line"> Dsus2/A Bm7 D/F# Gmaj7</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">          Dsus2/A       Bm7                          D/F#          Gmaj7</div>
+<div class="lyric-line"> Hanggang kailan ako maghihintay na parang bang wala nang papalit sayo</div>
+<div class="chord-line">          Dsus2/A           Bm7                   D/F#      Gmaj7</div>
+<div class="lyric-line"> Nasan ka man, sigaw ng puso ko'y ikaw hanggang ngayon whoah</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">           Em7                     D/F#                            Gmaj7</div>
+<div class="lyric-line"> Kung sana lamang ay nakita mo ang lungkot sa'yong ngiti, isang umagang 'di ka nagbalik</div>
+<div class="chord-line">          Em7                      D/F#                   Gmaj7</div>
+<div class="lyric-line"> Gumising ka at nang makita mo ang tamis ng sandali ng kahapong di magbabalik</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">            Dsus2/A               Gmaj7</div>
+<div class="lyric-line">Hanggang sa dulo ng ating walang hanggan</div>
+<div class="chord-line">             Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Hanggang ang puso'y wala nang nararamdaman</div>
+<div class="chord-line">         Dsus2/A            Gmaj7</div>
+<div class="lyric-line">Kahit matapos ang magpakailanpaman</div>
+<div class="chord-line">            Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Ako'y maghihintay sa ngalan ng pag-ibig</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">         Dsus2/A         Bm7                    D/F#              Gmaj7</div>
+<div class="lyric-line">Hanggang kailan ako maghihintay na para bang walang iba sa piling mo</div>
+<div class="chord-line">         Dsus2/A        Bm7                    D/F#   Gmaj7</div>
+<div class="lyric-line">Nasan ka man sigaw ng puso ko ay ang pangalan mo whoah</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">          Em7                     D/F#                            Gmaj7</div>
+<div class="lyric-line">Kung sana lamang ay nakita mo ang lungkot sa'yong ngiti, isang umagang 'di ka nagbalik</div>
+<div class="chord-line">         Em7                      D/F#                   Gmaj7</div>
+<div class="lyric-line">Gumising ka at nang makita mo ang tamis ng sandali ng kahapong di magbabalik</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">            Dsus2/A               Gmaj7</div>
+<div class="lyric-line">Hanggang sa dulo ng ating walang hanggan</div>
+<div class="chord-line">             Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Hanggang ang puso'y wala nang nararamdaman</div>
+<div class="chord-line">         Dsus2/A            Gmaj7</div>
+<div class="lyric-line">Kahit matapos ang magpakailanpaman</div>
+<div class="chord-line">            Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Ako'y maghihintay sa ngalan ng pag-ibig</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">         Bm7                         Bbmaj7</div>
+<div class="lyric-line">Hanggang kailan pa ba magtitiis, nalunod na sa kaiisip</div>
+<div class="chord-line">Asus4                    Gmaj7</div>
+<div class="lyric-line">Huling kapiling ka'y sa aking panaginip</div>
+<div class="chord-line">Em7                Cadd9            Csus2</div>
+<div class="lyric-line">Ikaw mula noon, ikaw hanggang ngayon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">            Dsus2/A              Gmaj7</div>
+<div class="lyric-line">Hanggang sa dulo ng ating walang hanggan</div>
+<div class="chord-line">             Bm7                 Gmaj7</div>
+<div class="lyric-line">Hanggang ang puso'y wala nang maramdaman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">            Dsus2/A               Gmaj7</div>
+<div class="lyric-line">Hanggang sa dulo ng ating walang hanggan</div>
+<div class="chord-line">             Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Hanggang ang puso'y wala nang nararamdaman</div>
+<div class="chord-line">         Dsus2/A            Gmaj7</div>
+<div class="lyric-line">Kahit matapos ang magpakailanpaman</div>
+<div class="chord-line">            Bm7       D/F#         Gmaj7</div>
+<div class="lyric-line">Ako'y maghihintay sa ngalan ng pag-ibig mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">            Dsus2/A              Gmaj7</div>
+<div class="lyric-line">Hanggang sa dulo ng ating walang hanggan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">             Bm7       D/F#        Gmaj7</div>
+<div class="lyric-line">Hanggang ang puso'y wala nang nararamdaman</div>
+<div class="chord-line">         Dsus2/A            Gmaj7</div>
+<div class="lyric-line">Kahit matapos ang magpakailanpaman</div>
+<div class="chord-line">            Bm7       D/F#        Gmaj7</div>
+<div class="lyric-line">Ako'y maghihintay sa ngalan ng pag-ibig mo woahhhh</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">Bm7 D/F# Gmaj7</div>
+<div class="chord-line">Bm7 D/F# Gmaj7</div>
+  </div>
+</article>
+<article id="song-7" class="song" data-bpm="80" data-index="7" data-key="E">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">NOBELA</h2>
+    <div class="song-artist">Join the Club</div>
+  </div>
+    <span class="song-counter">Song 7 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">D# Gm        D# Gm G#</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">G#          D#</div>
+<div class="lyric-line">ngumiti kahit na napipilitan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G#                D#</div>
+<div class="lyric-line">kahit pa sinasadya</div>
+<div class="chord-line">G#             D#</div>
+<div class="lyric-line">mo akong masaktan paminsan-minsan</div>
+<div class="chord-line">G#                 A# (break)</div>
+<div class="lyric-line">bawat sandali na lang</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">tulad mo ba akong nahihirapan</div>
+<div class="chord-line">G#             D#</div>
+<div class="lyric-line">lalo't naiisip ka</div>
+<div class="chord-line">G#             D#</div>
+<div class="lyric-line">di ko na kaya pang makalimutan</div>
+<div class="chord-line">C#                 A#</div>
+<div class="lyric-line">bawat sandali na lang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">    G#           A#</div>
+<div class="lyric-line">at aalis magbabalik</div>
+<div class="chord-line">      D#         Cm</div>
+<div class="lyric-line">at uuliting sabihin</div>
+<div class="chord-line">       G#         A#</div>
+<div class="lyric-line">na mahalin kat sambitin</div>
+<div class="chord-line">         Gm      Cm</div>
+<div class="lyric-line">kahit muli masaktan</div>
+<div class="chord-line">         G#</div>
+<div class="lyric-line">sa pag-alis</div>
+<div class="lyric-line">ako'y magbabalik</div>
+<div class="chord-line">       G#m A#</div>
+<div class="lyric-line">sana naman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">sa isang marikit na alaala</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">pangitahing kay ganda</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">sana ngay pagbigyan</div>
+<div class="chord-line">G#</div>
+<div class="lyric-line">na ng tadhana</div>
+<div class="chord-line">                 A#</div>
+<div class="lyric-line">bawat sandali na lang</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">sumabay sa biglang pagkabahala</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">lumabis ang pagtataka</div>
+<div class="chord-line">G#              D#</div>
+<div class="lyric-line">tunay na pagsintang di alintana</div>
+<div class="chord-line">C#                 A#</div>
+<div class="lyric-line">bawat sandali na lang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">    G#           A#</div>
+<div class="lyric-line">at aalis magbabalik</div>
+<div class="chord-line">      D#         Cm</div>
+<div class="lyric-line">at uuliting sabihin</div>
+<div class="chord-line">       G#         A#</div>
+<div class="lyric-line">na mahalin kat sambitin</div>
+<div class="chord-line">         Gm      Cm</div>
+<div class="lyric-line">kahit muli masaktan</div>
+<div class="chord-line">         G#</div>
+<div class="lyric-line">sa pag-alis</div>
+<div class="lyric-line">ako'y magbabalik</div>
+<div class="chord-line">       G#m</div>
+<div class="lyric-line">sana naman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Solo 1]</div>
+<div class="chord-line">C#M7 A#m9 F#M7 G# x2 (break)</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Solo 2]</div>
+<div class="chord-line">F# F#m C#M7 C#7</div>
+<div class="chord-line">F# F#m G#</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">    F#          C#</div>
+<div class="lyric-line">ngumiti kahit na napipilitan</div>
+<div class="chord-line">F#              C#</div>
+<div class="lyric-line">kahit pa sinasadya</div>
+<div class="chord-line">F#             C#</div>
+<div class="lyric-line">mo akong masaktan paminsan-minsan</div>
+<div class="chord-line">B                  G#</div>
+<div class="lyric-line">bawat sandali na lang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">     F#           G#</div>
+<div class="lyric-line">at aalis magbabalik</div>
+<div class="chord-line">     C#          A#m</div>
+<div class="lyric-line">at uuliting sabihin</div>
+<div class="chord-line">     F#           G#</div>
+<div class="lyric-line">na mahalin kat sambitin</div>
+<div class="chord-line">      Fm       A#m</div>
+<div class="lyric-line">kahit muli masaktan</div>
+<div class="chord-line">     F#</div>
+<div class="lyric-line">sa pag-alis</div>
+<div class="lyric-line">ako'y magbabalik</div>
+<div class="chord-line">      F#m F# G#</div>
+<div class="lyric-line">sana naman</div>
+  </div>
+</article>
+<article id="song-8" class="song" data-bpm="64" data-index="8" data-key="C">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SANA</h2>
+    <div class="song-artist">I Belong to the Zoo</div>
+  </div>
+    <span class="song-counter">Song 8 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">C G Em D x2</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">C                        G</div>
+<div class="lyric-line">Umuwi na tila bang lahat nagbago na</div>
+<div class="chord-line">Em                            D</div>
+<div class="lyric-line">Nawalan na ng sigla ang 'yong mga mata</div>
+<div class="chord-line">          C</div>
+<div class="lyric-line">Ngayon ko lang naramdaman</div>
+<div class="chord-line">      G</div>
+<div class="lyric-line">Ang lamig ng gabi</div>
+<div class="chord-line">         D</div>
+<div class="lyric-line">Kahit na magdamag</div>
+<div class="chord-line">                 G</div>
+<div class="lyric-line">Na tayong magkatabi</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre Chorus]</div>
+<div class="chord-line">D Em         D G</div>
+<div class="lyric-line">    Bakit ka nag-iba?</div>
+<div class="chord-line">D Em         D G</div>
+<div class="lyric-line">    Meron na bang iba?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">     Em             G</div>
+<div class="lyric-line">Para 'di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Hahayaan naman kitang sumaya't umalis</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">     Em             G</div>
+<div class="lyric-line">Para 'di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">C                           C G</div>
+<div class="lyric-line">Hahayaan naman kitang umalis</div>
+<div class="chord-line">Em     D</div>
+<div class="lyric-line">Umalis</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">    C                             G</div>
+<div class="lyric-line">Binibilang ang hakbang hanggang wala ka na</div>
+<div class="chord-line">        Em                      D</div>
+<div class="lyric-line">Nagbabaka-sakaling lilingon ka pa</div>
+<div class="chord-line">           C</div>
+<div class="lyric-line">Hindi na ba mababalik</div>
+<div class="chord-line">      G</div>
+<div class="lyric-line">Ang mga sandali</div>
+<div class="chord-line">         D</div>
+<div class="lyric-line">Mga panahong may lalim</div>
+<div class="chord-line">                 G</div>
+<div class="lyric-line">Pa ang 'yong ngiti</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre Chorus]</div>
+<div class="chord-line">D Em         D G</div>
+<div class="lyric-line">    Bakit ka nag-iba?</div>
+<div class="chord-line">D Em         D G</div>
+<div class="lyric-line">    Meron na bang iba?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">     Em             G</div>
+<div class="lyric-line">Para 'di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Hahayaan naman kitang sumaya't umalis</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">     Em             G</div>
+<div class="lyric-line">Para 'di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Hahayaan naman kita</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">     Em             G</div>
+<div class="lyric-line">Para ang mga ayaw mo'y aking iibahin</div>
+<div class="chord-line">C       G</div>
+<div class="lyric-line">'di ba sinabi mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Basta't tayong dalwa'y</div>
+<div class="lyric-line">Sasaya ang mundong mapait</div>
+<div class="chord-line">C      G</div>
+<div class="lyric-line">'di ba sinabi ko</div>
+<div class="chord-line">    Em             G</div>
+<div class="lyric-line">Gagawin kong lahat upang tayo pa rin sa huli</div>
+<div class="chord-line">C         G</div>
+<div class="lyric-line">  Biglang nalaman ko</div>
+<div class="chord-line">C</div>
+<div class="lyric-line">May hinihintay ka lang palang bumalik</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">Em                   G</div>
+<div class="lyric-line">Dahil 'di ko maisip ano bang nagawa kong mali</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Para di na umibig ang puso kong muli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">Em                 G</div>
+<div class="lyric-line">Para di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">D</div>
+<div class="lyric-line">Hahayaan naman kita</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">C    G</div>
+<div class="lyric-line">Sana sinabi mo</div>
+<div class="chord-line">Em                 G</div>
+<div class="lyric-line">Para di na umasang may tayo pa sa huli</div>
+<div class="chord-line">C    G         C</div>
+<div class="lyric-line">Sana sinabi mo</div>
+  </div>
+</article>
+<article id="song-9" class="song" data-bpm="85" data-index="9" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">KALAPASTANGAN</h2>
+    <div class="song-artist">fitterkarma</div>
+  </div>
+    <span class="song-counter">Song 9 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Verse]</div>
+<div class="chord-line">     G         D              Cadd9 Cadd9</div>
+<div class="lyric-line">Oras nang sambahin ang ngalan mo</div>
+<div class="chord-line">        G               D                Cadd9 Cadd9</div>
+<div class="lyric-line">Para mabuhay habambuhay sa puso't isipan mo</div>
+<div class="chord-line">     G    D               Cadd9 Cadd9</div>
+<div class="lyric-line">Sino ba ako para mapansin mo</div>
+<div class="chord-line">      G            D                   Cadd9 Cadd9</div>
+<div class="lyric-line">Mga dalangin ko sa'yo sana'y pakinggan mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">G D Cadd9 Cadd9</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">      G    D                   Cadd9 Cadd9</div>
+<div class="lyric-line">Pa'no ba ako magiging 'sang santo</div>
+<div class="chord-line">         G         D                      Cadd9 Cadd9</div>
+<div class="lyric-line">Para makasama kita diyan sa tabi ng trono mo</div>
+<div class="chord-line">     G        D                  Cadd9 Cadd9</div>
+<div class="lyric-line">Ilan pa'ng pagsubok ang daraanan ko</div>
+<div class="chord-line">     G             D              Cadd9 Cadd9</div>
+<div class="lyric-line">Bago ako makaranas ng mga milagro mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">      Cadd9                D            Em G</div>
+<div class="lyric-line">O ang langit ay nandito lamang pala sa lupa</div>
+<div class="chord-line">         Cadd9              D            Em               G/B</div>
+<div class="lyric-line">At ang impyerno ay nasa isipan ko at pinalimot ng iyong ganda</div>
+<div class="chord-line">   Cadd9          D</div>
+<div class="lyric-line">Umaawit ang mga anghel</div>
+<div class="chord-line">   Em             G</div>
+<div class="lyric-line">Umaawit ang mga anghel</div>
+<div class="chord-line">   Cadd9                 D</div>
+<div class="lyric-line">Nagdiriwang sila nang makasama kita</div>
+<div class="chord-line">         G/B     B/D# G</div>
+<div class="lyric-line">Huwag ka sanang mawawala</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">Cadd9 D Em G</div>
+<div class="chord-line">Cadd9 D Em G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">  Cadd9               D</div>
+<div class="lyric-line">Mamamatay akong nakangiti</div>
+<div class="chord-line">       Em                 G</div>
+<div class="lyric-line">Kapag ikaw ang nasa aking tabi</div>
+<div class="chord-line">  Cadd9                D</div>
+<div class="lyric-line">Mabubuhay akong nagsisisi</div>
+<div class="chord-line">              Em              G/B</div>
+<div class="lyric-line">Kapag 'sang araw di kita mapapangiti</div>
+<div class="chord-line">       Cadd9                D</div>
+<div class="lyric-line">Kalapastangan ang 'di ka ibigin</div>
+<div class="chord-line">    Em                  G</div>
+<div class="lyric-line">Kalokohan ang 'di ka isipin</div>
+<div class="chord-line">              Cadd9           D</div>
+<div class="lyric-line">Kung ang mundo ay biglang gugunawin</div>
+<div class="chord-line">          G/B     B/D# G</div>
+<div class="lyric-line">Ikaw ang una kong hahanapin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">Cadd9 D Em G x4</div>
+<div class="chord-line">Cadd9</div>
+  </div>
+</article>
+<article id="song-10" class="song" data-bpm="75" data-index="10" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">KUNG WALA KA</h2>
+    <div class="song-artist">Hale</div>
+  </div>
+    <span class="song-counter">Song 10 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G Cadd9</div>
+<div class="chord-line">G Cadd9</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G                 Cadd9</div>
+<div class="lyric-line">Natapos na ang lahat</div>
+<div class="chord-line">G               Cadd9</div>
+<div class="lyric-line">Nandito pa rin ako</div>
+<div class="chord-line">G              Cadd9</div>
+<div class="lyric-line">Hetong nakatulala</div>
+<div class="chord-line">Em7             D</div>
+<div class="lyric-line">Sa mundo, sa mundo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G            Cadd9</div>
+<div class="lyric-line">Hindi mo maiisip</div>
+<div class="chord-line">G              Cadd9</div>
+<div class="lyric-line">Hindi mo makikita</div>
+<div class="chord-line">G            Cadd9</div>
+<div class="lyric-line">Mga pangarap ko</div>
+<div class="chord-line">Em7                D</div>
+<div class="lyric-line">Para sayo, para sa'yo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">A7sus4     G/B</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9</div>
+<div class="lyric-line">Hindi ko maisip</div>
+<div class="chord-line">       Cadd9</div>
+<div class="lyric-line">Kung wala ka</div>
+<div class="chord-line">Em7 D</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9 Cadd9</div>
+<div class="lyric-line">Sa buhay ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 3]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G             Cadd9</div>
+<div class="lyric-line">Nariyan ka pa ba</div>
+<div class="chord-line">G               Cadd9</div>
+<div class="lyric-line">Hindi ka na matanaw</div>
+<div class="chord-line">G                 Cadd9</div>
+<div class="lyric-line">Kung merong madaraanang</div>
+<div class="chord-line">Em7           D</div>
+<div class="lyric-line">Pasulong, pasulong</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">A7sus4     G/B</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9</div>
+<div class="lyric-line">Hindi ko maisip</div>
+<div class="chord-line">       Cadd9</div>
+<div class="lyric-line">Kung wala ka</div>
+<div class="chord-line">Em7 D</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9 Cadd9</div>
+<div class="lyric-line">Sa buhay ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Em7 D Cadd9 Cadd9</div>
+<div class="chord-line">Em7 Cadd9 C# D</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Cadd9 D</div>
+<div class="lyric-line">Sundan mo</div>
+<div class="chord-line">       Em7                D</div>
+<div class="lyric-line">Ang paghimig na lulan, na aking pinagtatanto</div>
+<div class="chord-line">Cadd9 D</div>
+<div class="lyric-line">Sundan mo</div>
+<div class="chord-line">       Cadd9</div>
+<div class="lyric-line">Ang paghimig ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">A7sus4     G/B</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9</div>
+<div class="lyric-line">Hindi ko maisip</div>
+<div class="chord-line">       Cadd9</div>
+<div class="lyric-line">Kung wala ka</div>
+<div class="chord-line">A7sus4 G/B</div>
+<div class="lyric-line">Oh..</div>
+<div class="chord-line">         Cadd9</div>
+<div class="lyric-line">Sa buhay ko</div>
+  </div>
+</article>
+<article id="song-11" class="song" data-bpm="125" data-index="11" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">BISAN PA</h2>
+  </div>
+    <span class="song-counter">Song 11 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line"> G D C x2 (Guitar Solo)</div>
+<div class="chord-line">Em D C x2 </div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">G        D      C (Guitar solo)</div>
+<div class="lyric-line"> Dili sayon ang hikalimtan ka...</div>
+<div class="chord-line">G          D       C</div>
+<div class="lyric-line"> Hangtod karon ako nag-pa-abot pa....</div>
+<div class="chord-line">G          D          C</div>
+<div class="lyric-line"> Nga Mahibalik pa ang kagahapon ta</div>
+<div class="chord-line">  Em      D     C            D</div>
+<div class="lyric-line">Bisan pa ug ako gikalimtan mo na....</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">      G         D        C</div>
+<div class="lyric-line">Bisan pa ug may la-in ka na karon</div>
+<div class="chord-line">     G        D         C</div>
+<div class="lyric-line">Ikaw lang gihapon ang higugma-on</div>
+<div class="chord-line">      G        D         C</div>
+<div class="lyric-line">Bisan pa ug kasakit lang ang ma-angkon</div>
+<div class="chord-line">      Em       D       C</div>
+<div class="lyric-line">Basta malipay ka ang tanan akong dawaton... </div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line"> Em D C x2 </div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line"> G       D        C</div>
+<div class="lyric-line"> Nakita ko karon ang kahimtang mo....</div>
+<div class="chord-line">G         D             C</div>
+<div class="lyric-line"> Lahi ra gyud sa ako pa ang ka-uban mo...(Ang kauban mo...)</div>
+<div class="chord-line">G         D             C</div>
+<div class="lyric-line"> Sa iyang kiliran pagka malipayon mo</div>
+<div class="chord-line">    Em     D         C              D</div>
+<div class="lyric-line">Ug ako ani-a naghandom nga balikon mo...Ohh...</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">      G         D        C</div>
+<div class="lyric-line">Bisan pa ug may la-in ka na karon</div>
+<div class="chord-line">     G        D         C</div>
+<div class="lyric-line">Ikaw lang gihapon ang higugma-on</div>
+<div class="chord-line">      G        D         C</div>
+<div class="lyric-line">Bisan pa ug kasakit lang ang ma-angkon</div>
+<div class="chord-line">      Em      D        C</div>
+<div class="lyric-line">Basta malipay ka ang tanan akong dawaton... </div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line"> Am          B            C              D</div>
+<div class="lyric-line">  Hangtod karon ako ming-laom lang gihapon..</div>
+<div class="chord-line">Am        B           C               D</div>
+<div class="lyric-line">  Nga mo-abot ang panahon nga imong balikon...</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Solo]</div>
+<div class="chord-line">G D C x3</div>
+<div class="chord-line">Em D C D</div>
+<div class="chord-line">       G            D  C</div>
+<div class="lyric-line">Bisan pa... (Bisan pa...)</div>
+<div class="chord-line">      G            D  C</div>
+<div class="lyric-line">Bisan pa... (Bisan pa...)</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">       G         D        C</div>
+<div class="lyric-line">Bisan pa ug may la-in ka na karon</div>
+<div class="chord-line">     G        D         C</div>
+<div class="lyric-line">Ikaw lang gihapon ang higugma-on</div>
+<div class="chord-line">      G        D         C</div>
+<div class="lyric-line">Bisan pa ug kasakit lang ang ma-angkon</div>
+<div class="chord-line">      Em      D        C             G D C</div>
+<div class="lyric-line">Basta malipay ka ang tanan akong dawaton... </div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">      G D C</div>
+<div class="lyric-line">Bisan pa...</div>
+<div class="chord-line">      G D C</div>
+<div class="lyric-line">Bisan pa...</div>
+<div class="chord-line">      G D      C</div>
+<div class="lyric-line">Bisan pa ang tanan akong dawaton...  </div>
+  </div>
+</article>
+<article id="song-12" class="song" data-bpm="90" data-index="12" data-key="A">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SINE SINE</h2>
+    <div class="song-artist">Missing Filemon</div>
+  </div>
+    <span class="song-counter">Song 12 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">D B E       E7</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">A       C#7            F#m</div>
+<div class="lyric-line">Sinesine wala tay laing lingaw</div>
+<div class="chord-line">  A7</div>
+<div class="lyric-line">Kandila luyo sa habol</div>
+<div class="chord-line">D                Dm</div>
+<div class="lyric-line">Katawang binayran og pisong kinawat</div>
+<div class="chord-line">A              E</div>
+<div class="lyric-line">Sa gubaong pitakang lola</div>
+<div class="chord-line">A        C#7</div>
+<div class="lyric-line">Anino sa mga artistang papel</div>
+<div class="chord-line">  A7</div>
+<div class="lyric-line">Gihinganlan tag si Pedro'g</div>
+<div class="chord-line">D                 Dm</div>
+<div class="lyric-line">Sabel Sila'ng bida niadtong estorya</div>
+<div class="chord-line">A                E</div>
+<div class="lyric-line">Sa gugma nga way katumanan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">A          C#7        F#m</div>
+<div class="lyric-line">Sine..sinesine sa bata pa</div>
+<div class="chord-line">A7                 D</div>
+<div class="lyric-line">Di na unta matapos pa</div>
+<div class="chord-line">  C#m    F#m    Bm         E</div>
+<div class="lyric-line">Bisan pa man sa pagdagan sa panahon</div>
+<div class="chord-line">A          C#7        F#m</div>
+<div class="lyric-line">Lantawon mga eksena nga molabay</div>
+<div class="chord-line">A7                 D</div>
+<div class="lyric-line">Tanang tawo makasakay</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">C#m   F#m    Bm         E</div>
+<div class="lyric-line">Saksihan ta ang pagdagan sa panahon</div>
+<div class="section-label">[Repeat Intro]</div>
+<div class="chord-line">D B7 E</div>
+<div class="lyric-line">panahon..</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">A       C#7            F#m</div>
+<div class="lyric-line">Sigesigeha lang imong paglakaw</div>
+<div class="chord-line">  A7</div>
+<div class="lyric-line">Ay'g kahadlok may kahayag</div>
+<div class="chord-line">D                Dm</div>
+<div class="lyric-line">Modan-ag sa dalang mangitngit</div>
+<div class="chord-line">  A                      E</div>
+<div class="lyric-line">Lakip na ang langit daw lapad nga adlaw</div>
+<div class="chord-line">A       C#7            F#m</div>
+<div class="lyric-line">Ang kinabuhi sugilanong hiwi</div>
+<div class="chord-line">  A7</div>
+<div class="lyric-line">Kalipay kasakit ug kalami</div>
+<div class="chord-line">D                Dm</div>
+<div class="lyric-line">Silang bida niining salida</div>
+<div class="chord-line">A                      E</div>
+<div class="lyric-line">Sa gugma nga way katumanan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">A          C#7         F#m</div>
+<div class="lyric-line">Sine..sinesine sa bata pa</div>
+<div class="chord-line">A7                   D</div>
+<div class="lyric-line">Di na unta matapos pa</div>
+<div class="chord-line">  C#m    F#m      Bm       E</div>
+<div class="lyric-line">Bisan pa man sa pagdagan sa panahon</div>
+<div class="chord-line">A          C#7         F#m</div>
+<div class="lyric-line">Lantawon mga eksena nga molabay</div>
+<div class="chord-line">A7                   D</div>
+<div class="lyric-line">Tanang tawo makasakay</div>
+<div class="chord-line">C#m   F#m      Bm        E</div>
+<div class="lyric-line">Saksihan ta ang pagdagan sa panahon</div>
+<div class="section-label">[End]</div>
+<div class="chord-line">D B7 E</div>
+<div class="lyric-line">panahon..</div>
+  </div>
+</article>
+<article id="song-13" class="song" data-bpm="99" data-index="13" data-key="C">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SABOT-SABOT</h2>
+    <div class="song-artist">Phylum</div>
+  </div>
+    <span class="song-counter">Song 13 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">C F C F C F C F</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">C     F         Am            G</div>
+<div class="lyric-line">  Diba duwa-duwa ra man ning atoa</div>
+<div class="chord-line">C         F                Am      G</div>
+<div class="lyric-line">  Nganung masakitan man ko kung magkuyog mong duha</div>
+<div class="chord-line">C      F             Am       G</div>
+<div class="lyric-line">  Diba nagsabot nata kung mu abot na siya</div>
+<div class="chord-line">F               G</div>
+<div class="lyric-line">  Taposon dayon ni natong relasyon na</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">C F C F C F C F</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">C    F         Am      G</div>
+<div class="lyric-line">  Og ako karon nakapangutana</div>
+<div class="chord-line">C          F</div>
+<div class="lyric-line">  Nganong karon pa man ka</div>
+<div class="chord-line">Am           G</div>
+<div class="lyric-line">  Na may uyab natang duha</div>
+<div class="chord-line">C        F        Am       G</div>
+<div class="lyric-line">  Maikog na nuhon ko sa pagbiya na niya</div>
+<div class="chord-line">Am(12x)                             Am-Am</div>
+<div class="lyric-line">  Kay gipaila-ila nako sa iyang mama</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">                     F</div>
+<div class="lyric-line">    Maong ikaw akong gibiya-an</div>
+<div class="chord-line">       G               C</div>
+<div class="lyric-line">    Na hina-ot nga makalimtan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          C(distort) Am</div>
+<div class="lyric-line">    Ang talagsaong kalipay</div>
+<div class="chord-line">         G                   F   G</div>
+<div class="lyric-line">    Na kanimo ra matagamtaman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Instrumental]</div>
+<div class="chord-line">C F C F C F C F</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 3]</div>
+<div class="chord-line">C    F         Am      G</div>
+<div class="lyric-line">  Og ako karon nakapangutana</div>
+<div class="chord-line">C          F</div>
+<div class="lyric-line">  Nganong karon pa man ka</div>
+<div class="chord-line">Am           G</div>
+<div class="lyric-line">  Na may uyab natang duha</div>
+<div class="chord-line">C        F        Am       G</div>
+<div class="lyric-line">  Maikog na nuhon ko sa pagbiya na niya</div>
+<div class="chord-line">Am(12x)                             Am-Am</div>
+<div class="lyric-line">  Kay gipaila-ila nako sa iyang mama</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">                     F</div>
+<div class="lyric-line">    Maong ikaw akong gibiya-an</div>
+<div class="chord-line">       G                C</div>
+<div class="lyric-line">    Na hina-ot nga makalimtan</div>
+<div class="chord-line">          C(distort) Am</div>
+<div class="lyric-line">    Ang talagsaong kalipay</div>
+<div class="chord-line">         G                   F   G</div>
+<div class="lyric-line">    Na kanimo ra matagamtaman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Outro]</div>
+<div class="chord-line">F  Am   G     F</div>
+<div class="lyric-line"> Bisag asa ko taman</div>
+<div class="chord-line">F Am        Am G F</div>
+<div class="lyric-line"> Palayo sa emong kiliran</div>
+<div class="chord-line">F Am        G     F</div>
+<div class="lyric-line"> Halos kada lugar akong ma-abtan</div>
+<div class="chord-line">F Am           Am       G          F</div>
+<div class="lyric-line"> Ikaw ra giyapon akong mahinumduman</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus] x2</div>
+<div class="chord-line">                     F</div>
+<div class="lyric-line">    Maong ikaw akong gibiya-an</div>
+<div class="chord-line">       G                C</div>
+<div class="lyric-line">    Na hina-ot nga makalimtan</div>
+<div class="chord-line">          C(distort) Am</div>
+<div class="lyric-line">    Ang talagsaong kalipay</div>
+<div class="chord-line">         G                   F   G</div>
+<div class="lyric-line">    Na kanimo ra matagamtaman</div>
+  </div>
+</article>
+<article id="song-14" class="song" data-bpm="100" data-index="14" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">GUGMANG GIATAY</h2>
+    <div class="song-artist">The Ambassadors</div>
+  </div>
+    <span class="song-counter">Song 14 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">G Em C D</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G                  G/D</div>
+<div class="lyric-line">Buut Kung ikaw masayod</div>
+<div class="chord-line">G         G/D</div>
+<div class="lyric-line">Paminawon mo</div>
+<div class="chord-line">G                  Em</div>
+<div class="lyric-line">Kay kung pananglit yam-iran mo</div>
+<div class="chord-line">C              D</div>
+<div class="lyric-line">mga panumpa ug pasalig ko</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G               Em</div>
+<div class="lyric-line">Ug kong ugaling kalit kang mubiya</div>
+<div class="chord-line">C               D</div>
+<div class="lyric-line">di ko kapugngan walog ning mga luha</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">      C         D</div>
+<div class="lyric-line">kay ikaw akong himaya</div>
+<div class="chord-line">         G                 Em</div>
+<div class="lyric-line">handumon ko matag karon ug unya</div>
+<div class="chord-line"> C              D               G G/D</div>
+<div class="lyric-line">Ikaw langit ug yuta akong pinangga</div>
+<div class="chord-line">  G</div>
+<div class="lyric-line">Ulan...</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Em      D           C</div>
+<div class="lyric-line">unya mihabol ang kangitngit</div>
+<div class="chord-line">Em       D           G</div>
+<div class="lyric-line">nga gi duyugan sa ulan</div>
+<div class="chord-line">Em                  G/D</div>
+<div class="lyric-line">ug sa Kalit lang nahanaw</div>
+<div class="chord-line">Em                D</div>
+<div class="lyric-line">ang bidlisiw sa adlaw</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">   G                 D</div>
+<div class="lyric-line">O kahayag sa imong panagway</div>
+<div class="chord-line">        C                  D</div>
+<div class="lyric-line">nga na ulipon sa gugmang giatay</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          G               D</div>
+<div class="lyric-line">Inday paminawa kabus kong gugma</div>
+<div class="chord-line">         C         D</div>
+<div class="lyric-line">nga kanimo akong igasa</div>
+<div class="chord-line">               C</div>
+<div class="lyric-line">dili ko man mahatag</div>
+<div class="chord-line">      D</div>
+<div class="lyric-line">ang tanang bahandi</div>
+<div class="chord-line">G           Em</div>
+<div class="lyric-line">ning kalibutan</div>
+<div class="chord-line">       C          D</div>
+<div class="lyric-line">apan inday nga intawn</div>
+<div class="chord-line">  C            D</div>
+<div class="lyric-line">alaot nga na ulipon</div>
+<div class="chord-line">                G Em C Am G</div>
+<div class="lyric-line">sa gugmang giatay.</div>
+  </div>
+</article>
+<article id="song-15" class="song" data-bpm="85" data-index="15" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SAKSI ANG LANGIT</h2>
+    <div class="song-artist">December Avenue</div>
+  </div>
+    <span class="song-counter">Song 15 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">Dmaj7 Gmaj7</div>
+<div class="chord-line">Dmaj7 Gmaj7</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">            D</div>
+<div class="lyric-line">Nangangarap lang</div>
+<div class="chord-line">                  Gmaj7</div>
+<div class="lyric-line">Habang ika'y pinagmamasdan</div>
+<div class="chord-line">                D</div>
+<div class="lyric-line">Nagbibilang ng iyong hakbang</div>
+<div class="chord-line">                     Gmaj7</div>
+<div class="lyric-line">Hanggang ika'y aking mahagkan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">                   Em</div>
+<div class="lyric-line">'Di sasayangin ang oras sa pag-ibig mo</div>
+<div class="chord-line">                G</div>
+<div class="lyric-line">Mas pipiliin ko</div>
+<div class="chord-line">                                    D</div>
+<div class="lyric-line">Ibigay lahat pati itong aking mundo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">                     Gmaj7</div>
+<div class="lyric-line">Halika't sumayaw sa ilalim ng bituin</div>
+<div class="chord-line">                       D/F#</div>
+<div class="lyric-line">Habang ako'y nakatingin sa'yo</div>
+<div class="chord-line">                      Em       G</div>
+<div class="lyric-line">Wala ng 'kong ibang mahihiling</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">                          D G</div>
+<div class="lyric-line">Saksi ang langit sa'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">               D</div>
+<div class="lyric-line">'Wag kang magtaka</div>
+<div class="chord-line">                       G</div>
+<div class="lyric-line">Kung bakit tayo pinag-isa</div>
+<div class="chord-line">                D</div>
+<div class="lyric-line">'Wag kanang kabahan</div>
+<div class="chord-line">                G</div>
+<div class="lyric-line">Ito'y hindi panaginip lang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">                  Em</div>
+<div class="lyric-line">'Di gumagalaw ang oras sa paligid ko</div>
+<div class="chord-line">                   G</div>
+<div class="lyric-line">Pati itong mundo'y</div>
+<div class="chord-line">                                    D</div>
+<div class="lyric-line">Tumitigil habang ako'y nasa tabi mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">                     Gmaj7</div>
+<div class="lyric-line">Halika't sumayaw sa ilalim ng bituin</div>
+<div class="chord-line">                       D/F#</div>
+<div class="lyric-line">Habang ako'y nakatingin sa'yo</div>
+<div class="chord-line">                      Em       G</div>
+<div class="lyric-line">Wala ng 'kong ibang mahihiling</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Saksi ang langit sa'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Refrain]</div>
+<div class="chord-line">D              G</div>
+<div class="lyric-line">  Oh-oh, oh-oh-oh</div>
+<div class="chord-line">                Em</div>
+<div class="lyric-line">Oh-oh, oh-oh-oh</div>
+<div class="chord-line">                G</div>
+<div class="lyric-line">Oh-oh, oh-oh-oh</div>
+<div class="chord-line">                D</div>
+<div class="lyric-line">Oh-oh, oh-oh-oh</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Saksi ang langit</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Saksi ang langit sa'tin</div>
+<div class="chord-line">G</div>
+<div class="lyric-line">  Saksi ang langit</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Saksi ang langit sa'tin</div>
+<div class="chord-line">Em</div>
+<div class="lyric-line">   Saksi ang langit</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Saksi ang langit sa'tin</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">G</div>
+<div class="lyric-line">    Saksi ang langit</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">                  Em</div>
+<div class="lyric-line">'Di gumagalaw ang oras sa paligid ko</div>
+<div class="chord-line">                   G</div>
+<div class="lyric-line">Pati itong mundo'y</div>
+<div class="chord-line">                                    D</div>
+<div class="lyric-line">Tumitigil habang ako'y nasa tabi mo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">                     Gmaj7</div>
+<div class="lyric-line">Halika't sumayaw sa ilalim ng bituin</div>
+<div class="chord-line">                        D/F#</div>
+<div class="lyric-line">Habang ako'y nakatingin sa'yo</div>
+<div class="chord-line">                      Em        G</div>
+<div class="lyric-line">Wala ng 'kong ibang mahihiling</div>
+<div class="chord-line">                        D</div>
+<div class="lyric-line">Saksi ang langit sa'tin (Saksi ang langit)</div>
+<div class="chord-line">                     Gmaj7</div>
+<div class="lyric-line">Halika't sumayaw sa ilalim ng bituin</div>
+<div class="chord-line">                      D/F#</div>
+<div class="lyric-line">Habang ako'y nakadikit sa'yo</div>
+<div class="chord-line">                     Em       G</div>
+<div class="lyric-line">Wala na'kong ibang mahihiling</div>
+<div class="chord-line">                 D</div>
+<div class="lyric-line">Saksi ang langit</div>
+  </div>
+</article>
+<article id="song-16" class="song" data-bpm="93" data-index="16" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">WAY SUKOD</h2>
+    <div class="song-artist">Oh, Caraga</div>
+  </div>
+    <span class="song-counter">Song 16 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 1]</div>
+<div class="chord-line">Cadd9                 Em7</div>
+<div class="lyric-line">Ako nang nabasa ang tanan</div>
+<div class="chord-line"> Cadd9                    Em7</div>
+<div class="lyric-line">Tanang gibantog nga kasulatan</div>
+<div class="chord-line"> Cadd9                         Em7</div>
+<div class="lyric-line">Nakab-ot ko nang adlaw ug ang buwan</div>
+<div class="chord-line">      Cadd9     Dsus4       G</div>
+<div class="lyric-line">Apan wa gihapon koy   nakaplagan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">Cadd9</div>
+<div class="lyric-line">Nangahas na kog adto sa lawod</div>
+<div class="chord-line">Cadd9                       Em7</div>
+<div class="lyric-line">Didto sulod nang dagko nga balud</div>
+<div class="chord-line">   Cadd9                Em7</div>
+<div class="lyric-line">Layo-layo pud akong na abot</div>
+<div class="chord-line">      Cadd9     Dsus4        G</div>
+<div class="lyric-line">Apan wa gihapon gyud ko kasabot</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">               Cadd9    G</div>
+<div class="lyric-line">Ug kung ngano mang di ko</div>
+<div class="chord-line">     Em7                         D/F#</div>
+<div class="lyric-line">Maka ingong maka limot gyd ko nimo</div>
+<div class="chord-line">            Cadd9         G</div>
+<div class="lyric-line">Kung ngano mang hangtod karon</div>
+<div class="chord-line">      Em7                      D/F#</div>
+<div class="lyric-line">Nanghinaot sa langitnon nga gahom</div>
+<div class="chord-line">          Cadd9               Em7</div>
+<div class="lyric-line">Kay sa kanunay ko kanimo nag dahom</div>
+<div class="chord-line">      Cadd9       Dsus4        G</div>
+<div class="lyric-line">Ang tubag inani ra gyud ka sayon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7             D/F#</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7   D/F#       G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Break]</div>
+<div class="chord-line">Cadd9 Em7       Cadd9     G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse 2]</div>
+<div class="chord-line">Cadd9                 Em7</div>
+<div class="lyric-line">Ako nang na bati ang tanan</div>
+<div class="chord-line">   Cadd9                    Em7</div>
+<div class="lyric-line">Tanang tigpamulong nga balaan</div>
+<div class="chord-line">  Cadd9                 Em7</div>
+<div class="lyric-line">Pamaba nila lunlon gamhanan</div>
+<div class="chord-line">      Cadd9     Dsus4       G</div>
+<div class="lyric-line">Apan wa gihapon koy na kat un-an</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">               Cadd9    G</div>
+<div class="lyric-line">Ug kung ngano mang di ko</div>
+<div class="chord-line">     Em7                         D/F#</div>
+<div class="lyric-line">Maka ingong maka limot gyd ko nimo?</div>
+<div class="chord-line">            Cadd9         G</div>
+<div class="lyric-line">Ug kung ngano mang hangtod karon</div>
+<div class="chord-line">      Em7                     D/F#</div>
+<div class="lyric-line">Nanghinaot sa langitnon nga gahom?</div>
+<div class="chord-line">          Cadd9              Em7</div>
+<div class="lyric-line">Kay sa kanunay ko kanimo nag dahom</div>
+<div class="chord-line">      Cadd9       Dsus4       G</div>
+<div class="lyric-line">Ang tubag inani ra gyud ka sayon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7             D/F#</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7   D/F#       G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Break 2]</div>
+<div class="chord-line">Cadd9 G Em7        D/F#</div>
+<div class="chord-line">Cadd9 G Em7        D/F#       G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-Chorus]</div>
+<div class="chord-line">               Cadd9    G</div>
+<div class="lyric-line">Ug kung ngano mang di ko</div>
+<div class="chord-line">     Em7                         D/F#</div>
+<div class="lyric-line">Maka ingong maka limot gyd ko nimo</div>
+<div class="chord-line">            Cadd9         G</div>
+<div class="lyric-line">Kung ngano mang hangtod karon</div>
+<div class="chord-line">      Em7                      D/F#</div>
+<div class="lyric-line">Nanghinaot sa langitnon nga gahom</div>
+<div class="chord-line">          Cadd9               Em7</div>
+<div class="lyric-line">Kay sa kanunay ko kanimo nag dahom</div>
+<div class="chord-line">      Cadd9       Dsus4        G</div>
+<div class="lyric-line">Ang tubag inani ra gyud ka sayon</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7             D/F#</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Cadd9           G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+<div class="chord-line">          Em7   D/F#       G</div>
+<div class="lyric-line">Ang gugma ko kanimo way sukod</div>
+  </div>
+</article>
+<article id="song-17" class="song" data-bpm="100" data-index="17" data-key="G">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">SA SUSUNOD NA HABANG BUHAY</h2>
+    <div class="song-artist">Ben&amp;Ben</div>
+  </div>
+    <span class="song-counter">Song 17 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="section-label">[Intro]</div>
+<div class="chord-line">G D/F# Em D</div>
+<div class="chord-line">G D/F# Em D</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">G               D/F#</div>
+<div class="lyric-line">  Kaya namang makayanan</div>
+<div class="chord-line">Em                D</div>
+<div class="lyric-line">    Kahit pa na nahihirapan</div>
+<div class="chord-line">G                 D/F#</div>
+<div class="lyric-line">  Kahit lungkot dumaraan</div>
+<div class="chord-line">Em                D</div>
+<div class="lyric-line">    Pag natuyo na ang luha</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-chorus]</div>
+<div class="chord-line">G</div>
+<div class="lyric-line">  Parang nahipan</div>
+<div class="chord-line">G</div>
+<div class="lyric-line">  Ang 'yong kandila</div>
+<div class="chord-line">G            G</div>
+<div class="lyric-line">  Init ay wala</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">   D                     F#m</div>
+<div class="lyric-line">Hindi ba, pangako mo nung una</div>
+<div class="chord-line">           Bm7</div>
+<div class="lyric-line">Tiwala'y iingatan</div>
+<div class="chord-line">              G</div>
+<div class="lyric-line">Baka naman sa susunod</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line">               Em7</div>
+<div class="lyric-line">Na habang buha-ay</div>
+<div class="chord-line">   Bm7</div>
+<div class="lyric-line">ha-ay</div>
+<div class="chord-line">   D    F#m</div>
+<div class="lyric-line">nalang</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Verse]</div>
+<div class="chord-line">G             D/F#</div>
+<div class="lyric-line">  'Di talaga inasahan</div>
+<div class="chord-line">Em                D</div>
+<div class="lyric-line">   Magkagulo't magkagulatan</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Pre-chorus]</div>
+<div class="chord-line">G         G             G              G</div>
+<div class="lyric-line">  Tahanang pinagpaguran, sa'n na napunta?</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">   D                     F#m</div>
+<div class="lyric-line">Hindi ba, pangako mo nung una</div>
+<div class="chord-line">           Bm7</div>
+<div class="lyric-line">Tiwala'y iingatan</div>
+<div class="chord-line">              G</div>
+<div class="lyric-line">Baka naman sa susunod</div>
+<div class="chord-line">                Em7</div>
+<div class="lyric-line">Na habang buha-ay</div>
+<div class="chord-line">   Bm</div>
+<div class="lyric-line">ha-ay</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Guitar Solo]</div>
+<div class="chord-line">D F#m Bm A/C# F#m G</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Bridge]</div>
+<div class="chord-line">    G</div>
+<div class="lyric-line">Hindi ba</div>
+<div class="chord-line">                D/F#</div>
+<div class="lyric-line">Pangako mo nung una</div>
+<div class="chord-line">           Bm</div>
+<div class="lyric-line">Tiwala'y iingatan</div>
+<div class="chord-line">              G</div>
+<div class="lyric-line">Baka naman sa susunod</div>
+<div class="chord-line">                Em7</div>
+<div class="lyric-line">Na habang buha-ay</div>
+<div class="chord-line">      A</div>
+<div class="lyric-line">ha-a-ay</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Chorus]</div>
+<div class="chord-line">   D                 F#m</div>
+<div class="lyric-line">At kahit nabago na ng oras</div>
+<div class="chord-line">                Bm</div>
+<div class="lyric-line">Ang puso ma'y nabutas</div>
+<div class="blank-line">&nbsp;</div>
+<div class="chord-line"> Bm</div>
+<div class="lyric-line">Ikaw pa rin</div>
+<div class="chord-line">   G                      Em7</div>
+<div class="lyric-line">Sa susunod na habang buha-ay</div>
+<div class="chord-line">   Bm</div>
+<div class="lyric-line">ha-ay</div>
+<div class="chord-line">  F#m G Gsus2</div>
+<div class="lyric-line">ha-a-ay</div>
+<div class="blank-line">&nbsp;</div>
+<div class="section-label">[Coda]</div>
+<div class="chord-line"> D</div>
+<div class="lyric-line">Ikaw pa rin</div>
+<div class="chord-line">    D</div>
+<div class="lyric-line">Ang pipiliin</div>
+<div class="chord-line">     Bm      Bm7</div>
+<div class="lyric-line">Kong mahalin</div>
+<div class="chord-line">   N.C.                     D</div>
+<div class="lyric-line">Sa susunod na habang buha-ay</div>
+  </div>
+</article>
+<article id="song-18" class="song" data-bpm="100" data-index="18" data-key="F#">
+  <div class="song-header">
+  <div class="song-header-main">
+    <h2 class="song-title">MAY SINDE</h2>
+  </div>
+    <span class="song-counter">Song 18 of 18</span>
+  </div>
+  <div class="song-content font-mono">
+<div class="chord-line">(F# G#m C# G#m7)</div>
+<div class="chord-line">F#</div>
+<div class="lyric-line">Deeeo</div>
+<div class="chord-line">F#          C#</div>
+<div class="lyric-line">May sindeo</div>
+<div class="chord-line">F#            C#          F#</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Sinde</div>
+<div class="lyric-line">May sinde may sinde</div>
+<div class="lyric-line">May sinde may sinde may sindeo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">I worked all night but I feel so kalma</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Halika na sa amin ay sumama</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Come mister Ganjaman show me the mahiwaga</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Wow mister Ganjaman kakaiba ang tama</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">One puff two puff three puff cough</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Four puff five puff six puff laugh</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Sinde</div>
+<div class="lyric-line">May sindeo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Sinde</div>
+<div class="lyric-line">May sinde may sinde may sinde</div>
+<div class="lyric-line">May sinde may sindeo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">A beautiful buds sticky sobrang bisa</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">My tummy is growling and I want meryenda</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Come Mister Ganjaman light the sensimilla</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Come mister Ganjaman roll the sensimilla</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">We've got a beautiful gyal name Maria Juana</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Kasa- kasama kahit sa gabi at umaga</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Sinde</div>
+<div class="lyric-line">May sindeo</div>
+<div class="blank-line">&nbsp;</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Tara sinde</div>
+<div class="lyric-line">May sinde may sinde may sinde</div>
+<div class="lyric-line">Day and night lagi na lang akong slow</div>
+<div class="lyric-line">Sindeo</div>
+<div class="lyric-line">May sindeo</div>
+  </div>
+</article>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div id="pause-hint" class="pause-hint">&#9646;&#9646; Paused</div>
+<button id="top-btn">&#8679; Top</button>
+
+<script src="transpose.js"></script>
+<script>
+
+(function() {
+  var mainEl = document.getElementById('main');
+  var btn = document.getElementById('scroll-btn');
+  var pauseHint = document.getElementById('pause-hint');
+  var scrollTimer = null;
+  var isScrolling = false;
+  var isPaused = false;
+
+  var SPEEDS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+  var speedIdx = 1; // default 1× (pure BPM speed)
+  var currentSpeed = SPEEDS[speedIdx];
+
+  // BPM-based scroll speed
+  // At BASE_BPM × 1× multiplier = BASE_PX_SEC px/sec (comfortable reading pace)
+  var BASE_BPM = 78;
+  var BASE_PX_SEC = 5;
+  var currentBpm = 75; // initialise to first song (Huling Sandali)
+  var scrollAccum = 0;
+
+  function getSpeed() {
+    var pxPerSec = BASE_PX_SEC * (currentBpm / BASE_BPM) * currentSpeed;
+    return pxPerSec / 50; // per 20 ms tick
+  }
+
+  function startScroll() {
+    scrollAccum = 0; // reset accumulator when (re)starting
+    if (scrollTimer) clearInterval(scrollTimer);
+    scrollTimer = setInterval(function() {
+      if (!isPaused) {
+        scrollAccum += getSpeed();
+        var px = Math.floor(scrollAccum);
+        if (px >= 1) {
+          mainEl.scrollBy({ top: px, left: 0, behavior: 'instant' });
+          scrollAccum -= px;
+        }
+        if ((mainEl.clientHeight + mainEl.scrollTop) >= mainEl.scrollHeight - 5) {
+          stopScroll();
+        }
+      }
+    }, 20);
+  }
+
+  function stopScroll() {
+    clearInterval(scrollTimer);
+    scrollTimer = null;
+    isScrolling = false;
+    btn.textContent = '▶ Auto-Scroll';
+    btn.classList.remove('active');
+  }
+
+  function updateBpm(bpm) {
+    currentBpm = bpm;
+    var el = document.getElementById('bpm-val');
+    if (!el) return;
+    el.textContent = bpm;
+    // brief highlight flash when BPM changes
+    el.classList.remove('changed');
+    void el.offsetWidth; // force reflow to restart animation
+    el.classList.add('changed');
+    setTimeout(function() { el.classList.remove('changed'); }, 600);
+    if (isScrolling) startScroll();
+  }
+
+  btn.addEventListener('click', function() {
+    if (isScrolling) {
+      stopScroll();
+    } else {
+      isScrolling = true;
+      btn.textContent = '⏹ Stop Scroll';
+      btn.classList.add('active');
+      startScroll();
+    }
+  });
+
+  // ── Speed selector ──
+  var scTrack  = document.getElementById('speed-track');
+  var scFill   = document.getElementById('sc-fill');
+  var scDots   = document.querySelectorAll('.sc-dot');
+  var scLabels = document.querySelectorAll('.sc-label');
+  var scVal    = document.getElementById('speed-val');
+  var isDragging = false;
+
+  function applySpeed(idx, animate) {
+    speedIdx = Math.max(0, Math.min(SPEEDS.length - 1, idx));
+    currentSpeed = SPEEDS[speedIdx];
+    scDots.forEach(function(d, i)   { d.classList.toggle('active', i === speedIdx); });
+    scLabels.forEach(function(l, i) { l.classList.toggle('active-label', i === speedIdx); });
+    scVal.textContent = currentSpeed;
+    scFill.style.transition = animate ? 'width 0.15s ease' : 'none';
+    scFill.style.width = (speedIdx / (SPEEDS.length - 1) * 100) + '%';
+    if (isScrolling) startScroll();
+  }
+
+  function idxFromX(clientX) {
+    var rect = scTrack.getBoundingClientRect();
+    var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    return Math.round(pct * (SPEEDS.length - 1));
+  }
+
+  scDots.forEach(function(dot, i) {
+    dot.addEventListener('click', function(e) { e.stopPropagation(); applySpeed(i, true); });
+  });
+
+  scTrack.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isDragging = true;
+    applySpeed(idxFromX(e.clientX), false);
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (isDragging) applySpeed(idxFromX(e.clientX), false);
+  });
+  document.addEventListener('mouseup', function(e) {
+    if (isDragging) { isDragging = false; applySpeed(idxFromX(e.clientX), true); }
+  });
+
+  scTrack.addEventListener('touchstart', function(e) {
+    isDragging = true;
+    applySpeed(idxFromX(e.touches[0].clientX), false);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    applySpeed(idxFromX(e.touches[0].clientX), false);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    if (e.changedTouches.length) applySpeed(idxFromX(e.changedTouches[0].clientX), true);
+  });
+
+  applySpeed(speedIdx, false); // initialise UI
+
+  // ── Fine-tune popover toggle (mobile only — desktop shows it inline) ──
+  var speedToggleBtn = document.getElementById('speed-toggle-btn');
+  var speedControl = document.getElementById('speed-control');
+  if (speedToggleBtn) {
+    speedToggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = speedControl.classList.toggle('open');
+      speedToggleBtn.classList.toggle('active', open);
+    });
+    document.addEventListener('click', function(e) {
+      if (speedControl.classList.contains('open') &&
+          !speedControl.contains(e.target) && e.target !== speedToggleBtn) {
+        speedControl.classList.remove('open');
+        speedToggleBtn.classList.remove('active');
+      }
+    });
+  }
+
+  // Pause on hover over song content
+  document.addEventListener('mouseenter', function(e) {
+    if (isScrolling && e.target && e.target.closest && e.target.closest('.song')) {
+      isPaused = true;
+      pauseHint.classList.add('visible');
+    }
+  }, true);
+
+  document.addEventListener('mouseleave', function(e) {
+    if (isScrolling && e.target && e.target.closest && e.target.closest('.song')) {
+      isPaused = false;
+      pauseHint.classList.remove('visible');
+    }
+  }, true);
+
+  // Jump to top (scrolls the main content pane, not the window)
+  var topBtn = document.getElementById('top-btn');
+  mainEl.addEventListener('scroll', function() {
+    if (mainEl.scrollTop > 300) topBtn.classList.add('visible');
+    else topBtn.classList.remove('visible');
+  });
+  topBtn.addEventListener('click', function() {
+    mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ── Sidebar (setlist) — persistent on desktop, drawer on mobile ──
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  var menuBtn = document.getElementById('menu-btn');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+  }
+  if (menuBtn) {
+    menuBtn.addEventListener('click', function() {
+      if (sidebar.classList.contains('open')) closeSidebar();
+      else openSidebar();
+    });
+  }
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // Active song in sidebar + song switching
+  var songs = Array.from(document.querySelectorAll('.song'));
+  var navLinks = Array.from(document.querySelectorAll('.nav-link'));
+
+  navLinks.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = a.getAttribute('href').slice(1);
+      var targetEl = document.getElementById(targetId);
+      if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      closeSidebar(); // switching songs always closes the mobile drawer
+    });
+  });
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var idx = entry.target.getAttribute('data-index');
+        navLinks.forEach(function(a) {
+          a.classList.toggle('active', a.getAttribute('data-index') === idx);
+        });
+        var active = navLinks.find(function(a) { return a.getAttribute('data-index') === idx; });
+        if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        var bpm = parseInt(entry.target.getAttribute('data-bpm'), 10);
+        if (bpm && bpm !== currentBpm) updateBpm(bpm);
+      }
+    });
+  }, { root: mainEl, rootMargin: '-60px 0px -55% 0px', threshold: 0 });
+
+  songs.forEach(function(s) { observer.observe(s); });
+})();
+
+// ── Per-song key / transpose toolbar (needs transpose.js loaded first) ──
+(function() {
+  var T = window.Transpose;
+  if (!T) return; // transpose.js failed to load — page still works without it
+
+  // Snapshot every chord-line's pristine original text once, before any
+  // transposition happens. All transposition is always computed fresh from
+  // this snapshot (never from the currently-displayed text), so repeated
+  // key changes never drift and Reset is always exact.
+  document.querySelectorAll('.chord-line').forEach(function(el) {
+    el.dataset.orig = el.textContent;
+  });
+
+  function buildToolbar(songEl) {
+    var origKey = songEl.getAttribute('data-key') || 'C';
+    var origIdx = T.keyIndex(origKey);
+    if (origIdx === null) origIdx = 0;
+
+    var bar = document.createElement('div');
+    bar.className = 'key-toolbar';
+    bar.innerHTML =
+      '<span class="key-toolbar-label">Key:</span>' +
+      '<span class="key-orig" title="Key as written in this chart">' + origKey + '</span>' +
+      '<button type="button" class="key-btn key-down" title="Transpose down a semitone">&minus;</button>' +
+      '<select class="key-select" title="Transpose to key&hellip;"></select>' +
+      '<button type="button" class="key-btn key-up" title="Transpose up a semitone">+</button>' +
+      '<button type="button" class="key-reset" title="Back to original key">Reset</button>';
+
+    var select = bar.querySelector('.key-select');
+    T.KEY_NAMES.forEach(function(name, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = name + (i === origIdx ? ' (orig.)' : '');
+      select.appendChild(opt);
+    });
+    select.value = origIdx;
+
+    var state = { shift: 0 };
+
+    function render() {
+      var targetIdx = ((origIdx + state.shift) % 12 + 12) % 12;
+      var restoring = state.shift === 0;
+      var preferFlat = T.PREFERS_FLAT[targetIdx];
+      songEl.querySelectorAll('.chord-line').forEach(function(el) {
+        el.textContent = restoring
+          ? el.dataset.orig
+          : T.transposeLine(el.dataset.orig, state.shift, preferFlat);
+      });
+      select.value = targetIdx;
+      bar.classList.toggle('key-transposed', !restoring);
+    }
+
+    select.addEventListener('change', function() {
+      var targetIdx = parseInt(select.value, 10);
+      state.shift = T.normalizeShift(targetIdx - origIdx);
+      render();
+    });
+    bar.querySelector('.key-up').addEventListener('click', function() {
+      state.shift = T.normalizeShift(state.shift + 1);
+      render();
+    });
+    bar.querySelector('.key-down').addEventListener('click', function() {
+      state.shift = T.normalizeShift(state.shift - 1);
+      render();
+    });
+    bar.querySelector('.key-reset').addEventListener('click', function() {
+      state.shift = 0;
+      render();
+    });
+
+    return bar;
+  }
+
+  document.querySelectorAll('.song').forEach(function(songEl) {
+    var header = songEl.querySelector('.song-header');
+    header.insertAdjacentElement('afterend', buildToolbar(songEl));
+  });
+})();
+
+</script>
+</body>
+</html>
