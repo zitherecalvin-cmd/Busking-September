@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Busking September &mdash; Chord Guides</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --bg2: #161b22; --border: #30363d;
+    --text: #e6edf3; --text-dim: #8b949e; --chord: #ffa657; --title: #f0f6fc;
+  }
+  body { background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px; }
+  .wrap { max-width: 560px; width: 100%; }
+  h1 { color: var(--title); font-size: 1.6rem; margin-bottom: 8px; }
+  p.sub { color: var(--text-dim); margin-bottom: 28px; font-size: 0.95rem; }
+  .card { display: block; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; text-decoration: none;
+    transition: border-color 0.15s; }
+  .card:hover { border-color: var(--chord); }
+  .card h2 { color: var(--chord); font-size: 1.1rem; margin-bottom: 4px; }
+  .card p { color: var(--text-dim); font-size: 0.88rem; }
+  footer { margin-top: 24px; color: var(--text-dim); font-size: 0.8rem; text-align: center; }
+  footer a { color: var(--chord); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>&#9835; Busking September</h1>
+  <p class="sub">Chord guides for jam sessions, with a key-transpose toolbar built for guitar.</p>
+
+  <a class="card" href="chord_guide_september.html">
+    <h2>September Setlist &rarr;</h2>
+    <p>14 songs &middot; sidebar setlist, per-song key transpose, BPM-synced auto-scroll</p>
+  </a>
+
+  <a class="card" href="chord_guide_v2.html">
+    <h2>Chord Guide v2 &rarr;</h2>
+    <p>18 songs &middot; same transpose toolbar and layout</p>
+  </a>
+
+  <footer>
+    Markdown charts: <a href="chord-guide-september.md">chord-guide-september.md</a> &middot;
+    <a href="chord-guide-v2.md">chord-guide-v2.md</a>
+  </footer>
+</div>
+</body>
+</html>
