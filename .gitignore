@@ -1,2 +1,6 @@
 # Redundant duplicate of the .docx files already in September/
 files.zip
+
+# Microsoft Word temp/lock files
+~$*
+*.tmp

@@ -78,9 +78,9 @@
           "Ito'y 'di galing sa mundo patungo sa pangakong paraiso"
         ] },
         { label: "Bridge", lines: [
-          "E             G         Cadd9    G",
+          "Bm             G        Em      D/F#",
           "Tumatakbo'ng oras gumising ka't bumangon na",
-          "        Cadd9               G     D",
+          "   G                      A",
           "Pagka't hindi na ikaw ang biktima"
         ] },
         { label: "Instrumental", lines: [
