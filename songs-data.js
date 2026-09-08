@@ -99,13 +99,15 @@
           "Hoy kaibigan ko pakinggan mong mga bulong sayo",
           "D           C           G    Cadd9      G           D",
           "Ito'y 'di galing sa mundo patungo sa pangakong paraiso",
-          "D           C           G    Cadd9      G           D",
-          "Ito'y 'di galing sa mundo patungo sa pangakong paraiso",
-          "D           C           G    Cadd9      G",
-          "Ito'y 'di galing sa mundo patungo sa pangakong"
+          "Cadd9      G           D",
+          "patungo sa pangakong paraiso",
+          "Cadd9      G      D",
+          "patungo sa pangakong ………… paraiso",
+          "",
+          "D  E  G  D"
         ] },
         { label: "Transition", lines: [
-          "// Prepare to transition into Same Ground",
+          "// Prepare for transition to Same Ground",
           "A  G"
         ] }
       ]
