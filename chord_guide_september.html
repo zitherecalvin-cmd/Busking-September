@@ -440,8 +440,13 @@ footer.page a { color: var(--accent); }
       select.value = state.key;
       resetBtn.disabled = (state.offset === 0);
       bar.classList.toggle('key-transposed', state.offset !== 0);
+      // At the original written key, show the pristine source text — a
+      // 0-semitone "transpose" would otherwise re-spell every chord through
+      // the canonical sharp/flat tables, silently losing an unusual but
+      // deliberate spelling like "C#7/E#" (re-spelled as "C#7/F").
+      var restoring = (state.offset === 0);
       chordLineNodes.forEach(function (n) {
-        n.el.textContent = T.transposeLine(n.original, state.offset, state.key);
+        n.el.textContent = restoring ? n.original : T.transposeLine(n.original, state.offset, state.key);
       });
     }
 

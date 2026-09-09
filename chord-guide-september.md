@@ -26,7 +26,7 @@ BPM notes: values marked with `~` are best-known estimates (the source chord she
 
 1. [Bulong](#1-bulong) — Kitchie Nadal · ♩ ~84 BPM · Key of D
 2. [Same Ground](#2-same-ground) — Kitchie Nadal · ♩ ~84 BPM · Key of A
-3. [I'll Never Go](#3-ill-never-go) — Erik Santos · ver. 4 · ♩ ~70 BPM · Key of D
+3. [I'll Never Go](#3-ill-never-go) — Erik Santos · ♩ ~70 BPM · Key of D
 4. [Multo](#4-multo) — Cup of Joe · ver. 2 · ♩ 104 BPM · Key of B
 5. [Saksi Ang Langit](#5-saksi-ang-langit) — December Avenue · ♩ 85 BPM · Key of G
 6. [Ulan](#6-ulan) — Cueshé · Half Empty, Half Full · ♩ ~72 BPM · Key of B
@@ -35,7 +35,7 @@ BPM notes: values marked with `~` are best-known estimates (the source chord she
 9. [Cruisin'](#9-cruisin) — Huey Lewis & Gwyneth Paltrow / Smokey Robinson · ♩ ~71 BPM · Key of E
 10. [Summer of '69](#10-summer-of-69) — Bryan Adams · ♩ 138 BPM · Key of D
 11. [Mamma Mia](#11-mamma-mia) — ABBA · ♩ ~118 BPM · Key of D
-12. [Dancing Queen](#12-dancing-queen) — ABBA · Luka Bloom acoustic cover arrangement · ♩ ~78 BPM · Key of A
+12. [Dancing Queen](#12-dancing-queen) — ABBA · ♩ ~101 BPM · Key of A
 13. [Babe](#13-babe) — Styx · ♩ ~71 BPM · Key of D
 14. [Palagi](#14-palagi) — TJ Monterde · ver. 2 · ♩ ~76 BPM · Key of F#
 
@@ -284,123 +284,151 @@ To see right through me?
 ---
 
 ## 3. I'll Never Go — Erik Santos
-*ver. 4*
 ♩ **~70 BPM** · Key of **D**
+
+**[Intro]**
+
+```
+D G/D D G/D
+```
 
 **[Verse 1]**
 
 ```
 D
-You always ask me
-        F#m
-Those words I say
-        Bm                       G
-And telling me what it means to me
-Em             A
-Every single day
-      F#m            Bm
-You always act this way
-      G
-For how many times I told you
-   Em
-I love you
-      A           D         G
-For this is all I know
+You would always ask me,
+      F#m
+Those words I say,
+    Bm
+And telling me,
+                 G
+What it means to me.
+Em            A
+Every single day,
+     F#m            Bm
+You always act this way,
+     Em
+For how many times I told you,
+    G           A             D
+I love you for this is all I know.
 ```
 
 **[Verse 2]**
 
-*((same chords as Verse 1))*
-
 ```
 D
-Come to me and hold me
-      F#m
-And you will see
-      Bm
-The love I give
-                        G
-For you still hold the key
+Come to me and hold me,
+    F#m
+And you will see,
+    Bm
+The love I give,
+                      G
+For you still hold the key.
 Em            A
-Every single day
-     F#m              Bm
-You always act this way
+Every single day,
+     F#m            Bm
+You always act this way,
      Em
-For how many times I told you
-   G
-I love you
-          A         D
-For this is all I know
+For how many times I told you,
+    G           A             D   G/D
+I love you for this is all I know.
 ```
 
 **[Chorus]**
 
 ```
-     D          G
-I'll never go far away from you
+      D            G/D
+I'll never go far away from you,
 Bm                 Em
-Even the sky will tell you
-                 G
-That I need you so
-    Bm
-For this is all I know
-       Em     A             D     G
-I'll never go far away from you
+Even the sky will tell you,
+                G
+That I need you so.
+      Bm
+For this is all I know,
+       Em       A            D
+I'll never go far away from you.
 ```
 
 **[Verse 3]**
 
-*((same chords as Verse 1))*
-
 ```
 D
-Come to me and hold me
-      F#m
-And you will see
-      Bm
-The love I give
-                        G
-For you still hold the key
+Come to me and hold me,
+    F#m
+And you will see,
+    Bm
+The love I give,
+                      G
+For you still hold the key.
 Em            A
-Every single day
-     F#m              Bm
-You always act this way
+Every single day,
+     F#m            Bm
+You always act this way,
      Em
-For how many times I told you
-   G
-I love you
-          A         D
-For this is all I know
+For how many times I told you,
+    G           A             D   G/D
+I love you for this is all I know.
 ```
 
 **[Chorus]**
 
 ```
-     D          G
-I'll never go far away from you
+      D            G/D
+I'll never go far away from you,
 Bm                 Em
-Even the sky will tell you
-                 G
-That I need you so
-    Bm
-For this is all I know
-       Em     A             D     G
-I'll never go far away from you
+Even the sky will tell you,
+                G
+That I need you so.
+      Bm
+For this is all I know,
+       Em       A            D
+I'll never go far away from you.
 ```
 
-**[Outro]**
+**[Instrumental]**
 
 ```
-     D          G
-I'll never go far away from you
+Bm A G D
+Bm A G
+```
+
+**[Chorus]**
+
+```
+      D            G/D
+I'll never go far away from you,
 Bm                 Em
-Even the sky will tell you
-                 G
-That I need you so
-    Bm
-For this is all I know
-       Em     A             D     G
-I'll never go far away from you
+Even the sky will tell you,
+                G
+That I need you so.
+      Bm
+For this is all I know,
+       Em       A            D
+I'll never go far away from you.
+```
+
+**[Chorus]**
+
+```
+      D            G/D
+I'll never go far away from you,
+Bm                 Em
+Even the sky will tell you,
+                G
+That I need you so.
+      Bm
+For this is all I know,
+       Em       A            D
+I'll never go far away from you.
+```
+
+**[Coda]**
+
+```
+      D        G/D
+I'll never go, never go away
+      D             G/D        D
+I'll never go away, never go.
 ```
 
 ---
@@ -1543,112 +1571,132 @@ D Daug x5
 ---
 
 ## 12. Dancing Queen — ABBA
-*Luka Bloom acoustic cover arrangement*
-♩ **~78 BPM** · Key of **A**
-
-> Luka Bloom's slower fingerstyle cover — not the original ABBA disco tempo (~101 bpm)
+♩ **~101 BPM** · Key of **A**
 
 **[Intro]**
 
 ```
-A - D - A - D
-```
+A D/A A D/A A D/A A
 
-**[Intro]**
+E/G# D/F#   A
+Ooh ooh ooh
 
-```
-E              C#
+A/E E          C#7/E#
 You can dance, you can jive
-F#m        F#m/E           B/D#
-Having the time of your life.
-    D              Bm
-Oh, see that girl, watch that scene,
-E           A              D - A - D
-Diggin' the dancing queen.
+F#m                     B/D#
+Having the time of your life
+             D              Bm
+Ooh ooh ooh, see that girl, watch that scene
+            A         D/A    A
+Digging the dancing queen
 ```
 
 **[Verse 1]**
 
 ```
-A                                 D
-Friday night and the lights are low.
+A                               D/A
+Friday night and the lights are low
+A                       F#m
+Looking out for a place to go
+E
+Where they play the right music getting in the swing
+            E    F#m         E  F#m
+You come to look for a king
+```
+
+**[Verse 2]**
+
+```
+A                     D/A
+Anybody could be that guy
 A                            F#m
-Looking out for a place to go.
-E                         F#m
-Where they play the right music
-E                F#m
-Getting in the swing.
-                   C#m     F#m        C#m - F#m
-You've come to look for a king.
-A                     D
-Anybody could be that guy.
-A                              F#m
-Night is young and the music's high.
-E                  F#m
-With a bit of rock music
-E             F#m
-Everything is fine,
-              E    F#m             E - F#m
-You're in the mood for a dance.
-                D               E
+Night is young and the music's high
+E
+With a bit of rock music, everything's fine
+              E    F#m            E  F#m
+You're in the mood for a dance
+             Bm               E
 And when you get the chance...
 ```
 
 **[Chorus]**
 
 ```
-            A               D                    A            D - E
-You are the dancing queen, young and sweet, only seventeen.
-A              D                      A         D
-Dancing queen, feel the beat from the tambourine.
-E              C#
+            A
+You are the dancing queen
+D/A                   A         D/A
+Young and sweet, only seventeen
+A
+Dancing queen
+D/A                    A           E/G# D/F# A/E
+Feel the beat from the tambourine, oh yeah
+E              C#7/E#
 You can dance, you can jive
-F#m         F#m/E            B/D#
-Having the time of your life.
-    D              Bm
-Oh, see that girl, watch that scene,
-E          A           D - A - D
-Diggin' the dancing queen.
+F#m                     B
+Having the time of your life
+             D              Bm
+Ooh ooh ooh, see that girl, watch that scene
+E           A         D
+Digging the dancing queen
 ```
 
-**[Verse 2]**
+**[Interlude]**
 
 ```
-A                              D
-You're a tease, you turn 'em on.
-A                                 F#m
-Leave 'em burning and then you're gone
-E                F#m      E           F#m
-Looking out for another, anyone will do,
-              E         F#m            E - F#m
-You're in the mood for a dance.
-                     D          E
-And when you get the chance
+A   D   A
+```
+
+**[Verse 3]**
+
+```
+A                             D/A
+You're a teaser, you turn 'em on
+A                                  F#m
+Leave them burning and then you're gone
+E
+Looking out for another, anyone will do
+              E    F#m         E F#m
+You're in the mood for a dance
+             Bm                E
+And when you get the chance...
 ```
 
 **[Chorus]**
 
 ```
-            A               D                    A            D - E
-You are the dancing queen, young and sweet, only seventeen.
-A              D                      A         D
-Dancing queen, feel the beat from the tambourine.
-E              C#
+            A
+You are the dancing queen
+D/A                   A       D/A
+Young and sweet, only seventeen
+A
+Dancing queen
+D/A                      A         E/G# D/F# A/E
+Feel the beat from the tambourine, oh yeah
+E              C#7/E#
 You can dance, you can jive
-F#m         F#m/E            B/D#
-Having the time of your life.
-    D              Bm
-Oh, see that girl, watch that scene,
-E          A           D - A - D
-Diggin' the dancing queen.
+F#m                     B/D#
+Having the time of your life
+             D              Bm
+Ooh ooh ooh, see that girl, watch that scene
+E            A         D/A    A    D/A
+Digging the dancing queen
+            A         D/A    A
+Digging the dancing queen
+    D/F#   A/E
+Ooh ooh ooh
 ```
 
 **[Outro]**
 
-*(fade out on)*
-
 ```
-A - D
+E              C#7/E#
+You can dance, you can jive
+F#m                     B/D#
+Having the time of your life
+             D              Bm
+Ooh ooh ooh, see that girl, watch that scene
+N.C.                  A D    E A
+Digging the dancing queen
 ```
 
 ---
