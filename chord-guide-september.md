@@ -1682,21 +1682,6 @@ E            A         D/A    A    D/A
 Digging the dancing queen
             A         D/A    A
 Digging the dancing queen
-    D/F#   A/E
-Ooh ooh ooh
-```
-
-**[Outro]**
-
-```
-E              C#7/E#
-You can dance, you can jive
-F#m                     B/D#
-Having the time of your life
-             D              Bm
-Ooh ooh ooh, see that girl, watch that scene
-N.C.                  A D    E A
-Digging the dancing queen
 ```
 
 ---
