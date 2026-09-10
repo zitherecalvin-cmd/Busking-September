@@ -27,7 +27,7 @@ BPM notes: values marked with `~` are best-known estimates (the source chord she
 1. [Bulong](#1-bulong) — Kitchie Nadal · ♩ ~84 BPM · Key of D
 2. [Same Ground](#2-same-ground) — Kitchie Nadal · ♩ ~84 BPM · Key of A
 3. [I'll Never Go](#3-ill-never-go) — Erik Santos · ♩ ~70 BPM · Key of D
-4. [Multo](#4-multo) — Cup of Joe · ver. 2 · ♩ 104 BPM · Key of B
+4. [Multo](#4-multo) — Cup of Joe · ver. 2 · ♩ 104 BPM · Key of Eb
 5. [Saksi Ang Langit](#5-saksi-ang-langit) — December Avenue · ♩ 85 BPM · Key of G
 6. [Ulan](#6-ulan) — Cueshé · Half Empty, Half Full · ♩ ~72 BPM · Key of B
 7. [Umaaraw, Umuulan](#7-umaaraw-umuulan) — Rivermaya · Tuloy ang Ligaya · ♩ ~160 BPM · Key of A
@@ -435,118 +435,116 @@ I'll never go away, never go.
 
 ## 4. Multo — Cup of Joe
 *ver. 2*
-♩ **104 BPM** · Key of **B**
-
-> Capo 4 — chords below are shown as capo shapes (Cadd9 shape sounds as D, etc.)
+♩ **104 BPM** · Key of **Eb**
 
 **[Verse]**
 
 ```
-     Cadd9                     G
+     Eadd9                     B
 Humingang malalim, pumikit na muna
-    Cadd9                      G
+    Eadd9                      B
 At baka sakaling namamalikmata lang
-        Cadd9                       G
+        Eadd9                       B
 Ba't nababahala? 'Di ba't ako'y mag-isa?
-         Cadd9    G              D
+         Eadd9    B              Gb
 Kala ko'y payapa, boses mo'y tumatawag pa
 ```
 
 **[Pre-Chorus]**
 
 ```
-   Cadd9       G
+   Eadd9       B
 Binaon naman na ang lahat
-     Em           D
+     Abm           Gb
 Tinakpan naman na 'king sugat
-       Cadd9        G
+       Eadd9        B
 Ngunit ba't ba andito pa rin?
-Em                    D
+Abm                    Gb
 Hirap na 'kong intindihin
 ```
 
 **[Verse]**
 
 ```
-         Cadd9                  G
+         Eadd9                  B
 Tanging panalangin, lubayan na sana
-          Cadd9                        G
+          Eadd9                        B
 Dahil sa bawat tingin, mukha mo'y nakikita
-       Cadd9         G               Em                   D
+       Eadd9         B               Abm                   Gb
 Kahit sa'n man mapunta ay anino mo'y kumakapit sa 'king kamay
-       Cadd9       G                  D
+       Eadd9       B                  Gb
 Ako ay dahan-dahang nililibing nang buhay pa
 ```
 
 **[Chorus]**
 
 ```
-     Cadd9      G
+     Eadd9      B
 Hindi na makalaya
-     Em                  D
+     Abm                  Gb
 Dinadalaw mo 'ko bawat gabi
-     Cadd9     G
+     Eadd9     B
 Wala mang nakikita
-       Em                      D
+       Abm                      Gb
 Haplos mo'y ramdam pa rin sa dilim
-      Cadd9        G
+      Eadd9        B
 Hindi na na-nanaginip
-      Em          D
+      Abm          Gb
 Hindi na ma-makagising
-         Cadd9 G
+         Eadd9 B
 Pasindi na ng ilaw
-       Em                    D
+       Abm                    Gb
 Minumulto na 'ko ng damdamin ko
-            Cadd9
+            Eadd9
 Ng damdamin ko
 ```
 
 **[Post-Chorus]**
 
 ```
-Cadd9      G
+Eadd9      B
 'Di mo ba ako lilisanin?
-Em            D
+Abm            Gb
 Hindi pa ba sapat pagpapahirap sa 'kin? (Damdamin ko)
-Cadd9           G
+Eadd9           B
 Hindi na ba ma-mamamayapa?
-Em              D
+Abm              Gb
 Hindi na ba ma-mamamayapa?
 ```
 
 **[Chorus]**
 
 ```
-       Cadd9     G
+       Eadd9     B
 Hindi na makalaya
-    Em                  D
+    Abm                  Gb
 Dinadalaw mo 'ko bawat gabi
-      Cadd9      G
+      Eadd9      B
 Wala mang nakikita
-         Em                   D
+         Abm                   Gb
 Haplos mo'y ramdam pa rin sa dilim
-      Cadd9      G
+      Eadd9      B
 Hindi na na-nanaginip
-      Em         D
+      Abm         Gb
 Hindi na ma-makagising
-       Cadd9   G
+       Eadd9   B
 Pasindi na ng ilaw
-         Em                  D
+         Abm                  Gb
 Minumulto na 'ko ng damdamin ko
-            Cadd9
+            Eadd9
 Ng damdamin ko
 ```
 
 **[Post-Chorus]**
 
 ```
-           Cadd9          G
+           Eadd9          B
 Makalaya (hindi mo ba ako lilisanin?)
-                             Em              D
+                             Abm              Gb
 Dinadalaw mo 'ko bawat gabi (hindi pa ba sapat pagpapahirap sa 'kin?)
-                    Cadd9             G
+                    Eadd9             B
 Wala mang nakikita (hindi na ba ma-mamamayapa?)
-                                   Em                D
+                                   Abm                Gb
 Haplos mo'y ramdam pa rin sa dilim (hindi na ba ma-mamamayapa?)
 ```
 
